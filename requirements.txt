@@ -2,6 +2,7 @@ Flask
 Flask-SQLAlchemy
 Flask-Migrate
 Flask-Mailman
+psycopg2-binary
 Flask-WTF
 Flask-Cors
 Flask-Login
