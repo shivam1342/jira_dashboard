@@ -17,8 +17,8 @@ from flask_mailman import Mail
 
 app = Flask(__name__)
 app.secret_key = 'azrdfhb'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://jira:<q3tanAyOOowSxCzVrWZwMDUaPZC5a8IR>@<dpg-d206i0ngi27c73c7l4vg-a>:5432/jiraDB'
-
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://jira:<q3tanAyOOowSxCzVrWZwMDUaPZC5a8IR>@<dpg-d206i0ngi27c73c7l4vg-a>:5432/jiraDB'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://jira:jira@localhost:5432/jiraDB'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config.update(
     MAIL_SERVER = 'smtp.gmail.com',
