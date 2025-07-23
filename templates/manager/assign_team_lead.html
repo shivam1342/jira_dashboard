@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Assign Team Lead{% endblock %}
+
+{% block content %}
+<style>
+  .form-box {
+    max-width: 600px;
+    margin: auto;
+    background: #f8fafc;
+    padding: 30px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1e293b;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #ffffff;
+    font-size: 15px;
+    color: #334155;
+  }
+
+  .btn-primary {
+    padding: 10px 18px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-primary:hover {
+    background-color: #1d4ed8;
+  }
+</style>
+
+<h2 class="page-title">Assign Team Lead</h2>
+
+<form method="POST" action="{{ url_for('manager.assign_team_lead', team_id=team.id) }}" class="form-box">
+  <div class="form-group">
+    <label for="lead_user_id">Select Lead:</label>
+    <select name="lead_user_id" required>
+      <option value="" disabled selected>Select a Team Member</option>
+      {% for member in members %}
+        <option value="{{ member.user_id }}">
+          {{ member.user.name or member.user.username }}
+          {% if member.role.name == 'lead' %}(Current Lead){% endif %}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <button type="submit" class="btn-primary">Assign Lead</button>
+</form>
+{% endblock %}

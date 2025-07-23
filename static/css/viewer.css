@@ -1,0 +1,89 @@
+/* ===== Viewer Dashboard ===== */
+.viewer-dashboard {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+}
+
+.viewer-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease;
+}
+
+.viewer-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
+}
+
+.viewer-card h3 {
+  color: #0077B6;
+  margin-bottom: 0.5rem;
+}
+
+.viewer-card p {
+  color: #333;
+  font-size: 0.9rem;
+}
+
+
+/* ===== Info Section ===== */
+.viewer-info {
+  background: #f0fbff;
+  border-left: 4px solid #00B4D8;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.viewer-info h4 {
+  margin-bottom: 0.3rem;
+  color: #023E8A;
+}
+
+.viewer-info p {
+  font-size: 0.88rem;
+  color: #555;
+}
+
+
+/* ===== Tables ===== */
+.viewer-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+}
+
+.viewer-table th, .viewer-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.viewer-table th {
+  background-color: #0096C7;
+  color: white;
+  font-weight: 500;
+}
+
+.viewer-table tr:hover {
+  background-color: #f2f9ff;
+}
+
+
+/* ===== Flash Messages ===== */
+.flash-messages {
+  list-style: none;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-left: 5px solid #48CAE4;
+  background-color: #E0F7FA;
+  color: #023E8A;
+  border-radius: 6px;
+}

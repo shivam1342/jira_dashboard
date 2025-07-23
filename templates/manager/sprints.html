@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Sprints for Project: {{ project.name }}</h2>
+
+<h3>Create New Sprint</h3>
+<form method="POST">
+    <label>Name:</label><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Start Date:</label><br>
+    <input type="date" name="start_date" required><br><br>
+
+    <label>End Date:</label><br>
+    <input type="date" name="end_date" required><br><br>
+
+    <label>Goal:</label><br>
+    <textarea name="goal"></textarea><br><br>
+
+    <button type="submit">Create Sprint</button>
+</form>
+
+<hr>
+
+<h3>Existing Sprints</h3>
+{% if sprints %}
+<table border="1">
+    <tr>
+        <th>Name</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Actions</th>
+    </tr>
+    {% for sprint in sprints %}
+    <tr>
+        <td>{{ sprint.name }}</td>
+        <td>{{ sprint.start_date }}</td>
+        <td>{{ sprint.end_date }}</td>
+        <td>
+            <a href="{{ url_for('manager.view_sprint', sprint_id=sprint.id) }}">View</a> |
+            <a href="{{ url_for('manager.edit_sprint', sprint_id=sprint.id) }}">Edit</a> |
+            <form action="{{ url_for('manager.delete_sprint', sprint_id=sprint.id) }}" method="POST" style="display:inline;">
+                <button type="submit" onclick="return confirm('Delete this sprint?')">Delete</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% else %}
+<p>No sprints found.</p>
+{% endif %}
+
+<a href="{{ url_for('manager.view_project_details', project_id=project.id) }}">Back to Project</a>
+{% endblock %}

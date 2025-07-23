@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block title %}Developer Details{% endblock %}
+
+{% block content %}
+<style>
+  .dev-profile {
+    background: #f1f5f9;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    border: 1px solid #cbd5e1;
+  }
+
+  .dev-profile h2 {
+    margin-bottom: 10px;
+    color: #1e293b;
+  }
+
+  .dev-profile p {
+    margin: 5px 0;
+    color: #475569;
+  }
+
+  .dev-sections {
+    display: flex;
+    gap: 20px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .dev-column {
+    flex: 1;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    min-height: 300px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.05);
+  }
+
+  .dev-column h3 {
+    text-align: center;
+    color: #334155;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 5px;
+  }
+
+  .dev-column ul {
+    list-style-type: none;
+    padding-left: 0;
+  }
+
+  .dev-column li {
+    margin: 10px 0;
+    padding: 8px 10px;
+    background: #f8fafc;
+    border-radius: 5px;
+    transition: background 0.2s;
+  }
+
+  .dev-column li:hover {
+    background: #e2e8f0;
+  }
+
+  .dev-column a {
+    color: #1d4ed8;
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .dev-column a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="dev-profile">
+  <h2>{{ developer.profile.name or developer.username }}</h2>
+  <p><strong>Username:</strong> {{ developer.username }}</p>
+  <p><strong>Email:</strong> {{ developer.profile.gmail or 'N/A' }}</p>
+  <p><strong>Phone:</strong> {{ developer.profile.phone or 'N/A' }}</p>
+  <p><strong>Gender:</strong> {{ developer.profile.gender or 'N/A' }}</p>
+  <p><strong>Role:</strong> {{ developer.role.value|capitalize }}</p>
+</div>
+
+<div class="dev-sections">
+  <!-- Projects -->
+  <div class="dev-column">
+    <h3>Assigned Projects</h3>
+    {% if assigned_projects %}
+      <ul>
+        {% for project in assigned_projects %}
+          <li>
+            <a href="{{ url_for('manager.view_project_details', project_id=project.id) }}">{{ project.name }}</a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="text-align:center;"><em>No assigned projects</em></p>
+    {% endif %}
+  </div>
+
+  <!-- Tasks -->
+  <div class="dev-column">
+    <h3>Assigned Tasks</h3>
+    {% if assigned_tasks %}
+      <ul>
+        {% for task in assigned_tasks %}
+          <li>
+            <a href="{{ url_for('manager.edit_task', task_id=task.id) }}">{{ task.task_name }}</a><br>
+            <small>Project: {{ task.project.name }}</small>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="text-align:center;"><em>No assigned tasks</em></p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

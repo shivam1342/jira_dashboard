@@ -1,0 +1,113 @@
+manager: 
+create project: done
+assign project: done
+create team: done
+create task: done
+assign task: done (there is some error with to_do while assigning the task)
+remove members: done
+delete project: done
+assign team lead: done
+
+
+developer:
+check project: done
+check task : done
+toggle task status: done
+give report to team lead: 
+raise query:
+Team lead give report to manager: 
+team lead can not view tasks of other members 
+
+
+
+
+
+
+
+templates/
+│
+├── base.html                     ← Layout with navbar + sidebar
+├── partials/
+│   ├── _header.html             ← Top navbar
+│   ├── _sidebar.html            ← Sidebar with links
+│   └── _footer.html            ← Optional footer (if needed)
+│
+├── manager/
+│   ├── dashboard.html
+│   ├── create_project.html
+│   ├── create_team.html
+│   ├── assign_team_lead.html
+│   ├── team_detail.html
+│   ├── assign_task.html
+│   ├── assign_project.html
+│   ├── project_detail.html
+│   ├── edit_project.html
+│   ├── edit_team.html
+│   ├── edit_task.html
+│   ├── deleted_entities.html       ← For optional restore view
+│   └── ...
+│
+└── auth/
+    └── login.html                 ← Already likely implemented
+
+static/
+│
+├── css/
+│   ├── main.css                  ← Your global aesthetic styles
+│   └── sidebar.css               ← Sidebar specific transitions
+│
+├── js/
+│   ├── sidebar-toggle.js         ← Handles sidebar open/close
+│   └── ...
+
+
+
+
+S.No	HTML Template File	Purpose / Used In Function
+1	dashboard.html	manager_dashboard()
+2	create_project.html	create_project()
+3	create_team.html	create_team()
+4	assign_team_lead.html	assign_team_lead()
+5	team_detail.html	view_team()
+6	assign_task.html	assign_task()
+7	assign_project.html	assign_project_to_team()
+8	project_detail.html	view_project()
+9	update_project.html	update_project()
+10	edit_project.html	edit_project()
+11	edit_team.html	edit_team()
+12	edit_task.html	edit_task()
+13	deleted_items.html ⚠️ (optional)	To view/restore soft-deleted tasks/projects manually
+
+
+
+
+
+✅ Present Routes/Functions (9 Total):
+Functionality	Route Present?	Notes
+Developer Dashboard	✅	developer_dashboard
+View Assigned Project Tasks	✅	view_project_tasks
+View All Projects Assigned	✅	view_projects
+Update Task Status	✅	update_task_status
+Submit Report	✅	submit_report
+View Team Tasks (TL only)	✅	view_team_tasks
+Send Message / Raise Query	✅	send_message
+Get Team Lead ID (helper)	✅	get_team_lead_id
+Logout	✅	logout
+
+❌ Missing or Not Implemented (Optional but Useful)
+Feature	Status	Suggested Route/Function Name
+🔍 View All Messages (Inbox/Sent)	❌ Missing	view_messages()
+👤 View Profile / Edit Profile	❌ Missing	view_profile() / edit_profile()
+📅 See Task Calendar / Deadlines	❌ Optional	task_calendar()
+📊 Dashboard Stats / Progress Summary	❌ Optional	Integrated in developer_dashboard()
+🔔 View Notifications	❌ Optional	view_notifications()
+🗑️ Deleted Tasks/History (if applicable)	❌ Optional	archived_tasks()
+
+* ✅ Create projects
+* ✅ Give project access to other teams
+* ✅ Create tasks and subtasks (for own or other developers)
+* ✅ Assign tasks to users (while creating)
+* ✅ View and manage reports (team/task/project progress)
+* ✅ Update task status (or override if stuck)
+* ✅ Edit/delete tasks within their projects
+

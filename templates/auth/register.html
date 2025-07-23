@@ -1,0 +1,42 @@
+{% extends 'auth/auth_base.html' %}
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-card">
+        <h2>Sign Up</h2>
+        <form method="POST" action="{{ url_for('auth.signup') }}">
+            <input type="text" name="username" placeholder="Username" required>
+
+            <input type="password" name="password" placeholder="Password" required>
+
+            <select name="team_id">
+                <option value="" selected>-- No Team (Visitor) --</option>
+                {% for team in teams %}
+                    <option value="{{ team.id }}">{{ team.name }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="text" name="name" placeholder="Full Name" required>
+
+            <input type="email" name="gmail" placeholder="Email" required>
+
+            <input type="tel" name="phone" placeholder="Phone Number" required>
+
+            <select name="gender" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+            </select>
+
+            <button type="submit" class="btn-primary">Sign Up</button>
+        </form>
+
+        <p class="form-footer">
+            Already have an account?
+            <a href="{{ url_for('auth.login_page') }}">Login</a>
+        </p>
+    </div>
+</div>
+{% endblock %}

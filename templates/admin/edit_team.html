@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Team</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(to right, #e3f2fd, #f1f5f9);
+            padding: 2rem;
+            margin: 0;
+        }
+
+        .form-container {
+            max-width: 700px;
+            background-color: #ffffff;
+            margin: auto;
+            padding: 2rem 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            text-align: center;
+            color: #1e293b;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            display: block;
+            margin-top: 1.2rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        input[type="text"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-top: 0.4rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 1rem;
+            background-color: #f9fafb;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: #3b82f6;
+            outline: none;
+            background-color: #fff;
+        }
+
+        .checkbox-group {
+            margin-top: 1rem;
+            display: flex;
+            flex-direction: column;
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px;
+            background-color: #f9fafb;
+        }
+
+        .checkbox-item {
+            margin: 6px 0;
+        }
+
+        button {
+            margin-top: 2rem;
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: #1d4ed8;
+        }
+
+        @media (max-width: 600px) {
+            .form-container {
+                padding: 1.5rem;
+            }
+        }
+
+        .sub-heading {
+            font-weight: bold;
+            margin-top: 10px;
+            color: #1e293b;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <form method="POST">
+            <h2>🛠️ Edit Team</h2>
+
+            <label for="name">Team Name</label>
+            <input type="text" name="name" id="name" value="{{ team.name }}" required>
+
+            <label for="description">Team Description</label>
+            <textarea name="description" id="description" rows="4">{{ team.description }}</textarea>
+
+            <label for="manager_id">Assign Team Manager</label>
+            <select name="manager_id" id="manager_id">
+                <option value="">-- Select Manager --</option>
+                {% for member in members %}
+                    <option value="{{ member.user.id }}" {% if team.manager_id == member.user.id %}selected{% endif %}>
+                        {{ member.user.profile.name if member.user.profile else member.user.username }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <label>Team Members (Checkbox)</label>
+            <div class="checkbox-group">
+                <div class="sub-heading">✔️ Current Members</div>
+                {% for member in members %}
+                    <div class="checkbox-item">
+                        <label>
+                            <input type="checkbox" name="member_ids" value="{{ member.user.id }}" checked>
+                            {{ member.user.profile.name if member.user.profile else member.user.username }}
+                        </label>
+                    </div>
+                {% endfor %}
+
+                <div class="sub-heading">➕ Available Developers</div>
+                {% for dev in all_developers %}
+                    {% if dev.id not in members | map(attribute='user_id') | list %}
+                        <div class="checkbox-item">
+                            <label>
+                                <input type="checkbox" name="member_ids" value="{{ dev.id }}">
+                                {{ dev.profile.name if dev.profile else dev.username }}
+                            </label>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <button type="submit">💾 Update Team</button>
+        </form>
+    </div>
+</body>
+</html>

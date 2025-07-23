@@ -1,0 +1,18 @@
+{% extends "auth/auth_base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<h2>Login</h2>
+<form method="POST" action="{{ url_for('auth.login_page') }}">
+    <label for="username">Username</label>
+    <input type="text" name="username" placeholder="Enter username" required>
+
+    <label for="password">Password</label>
+    <input type="password" name="password" placeholder="Enter password" required>
+
+    <button type="submit">Login</button>
+</form>
+
+<a href="{{ url_for('auth.signup') }}">Don't have an account? Sign Up</a>
+<a href="{{ url_for('auth.forgot_password') }}">Forgot Password?</a>
+{% endblock %}

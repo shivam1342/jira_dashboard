@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+  <!-- Header Section -->
+  <div class="bg-white/80 backdrop-blur-lg border-b border-white/20 shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div class="flex items-center space-x-4">
+        <div class="flex-shrink-0">
+          <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Search Results</h1>
+          <p class="text-gray-600 mt-1">
+            Results for <span class="font-semibold text-blue-600">"{{ query }}"</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Projects Section -->
+      <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden hover:shadow-2xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            Projects
+          </h2>
+        </div>
+        <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
+          {% if projects %}
+            {% for project in projects %}
+            <div class="group p-4 rounded-xl bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 border border-blue-100 hover:border-blue-200 transition-all duration-200 hover:shadow-md">
+              <h3 class="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
+                {{ project.name }}
+              </h3>
+              <p class="text-gray-600 text-sm mt-2 leading-relaxed">
+                {{ project.summary or "No summary available" }}
+              </p>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-12">
+              <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+              </div>
+              <p class="text-gray-500 font-medium">No projects found</p>
+              <p class="text-gray-400 text-sm mt-1">Try adjusting your search terms</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Teams Section -->
+      <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden hover:shadow-2xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-purple-500 to-purple-600 px-6 py-4">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            Teams
+          </h2>
+        </div>
+        <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
+          {% if teams %}
+            {% for team in teams %}
+            <div class="group p-4 rounded-xl bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border border-purple-100 hover:border-purple-200 transition-all duration-200 hover:shadow-md">
+              <h3 class="font-semibold text-gray-900 group-hover:text-purple-700 transition-colors flex items-center">
+                <span class="w-3 h-3 bg-purple-400 rounded-full mr-3"></span>
+                {{ team.name }}
+              </h3>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-12">
+              <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </div>
+              <p class="text-gray-500 font-medium">No teams found</p>
+              <p class="text-gray-400 text-sm mt-1">Try adjusting your search terms</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Tasks Section -->
+      <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden hover:shadow-2xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-4">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+            </svg>
+            Tasks
+          </h2>
+        </div>
+        <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
+          {% if tasks %}
+            {% for task in tasks %}
+            <div class="group p-4 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 hover:from-emerald-100 hover:to-teal-100 border border-emerald-100 hover:border-emerald-200 transition-all duration-200 hover:shadow-md">
+              <h3 class="font-semibold text-gray-900 group-hover:text-emerald-700 transition-colors flex items-center">
+                <span class="w-2 h-2 bg-emerald-400 rounded-full mr-3"></span>
+                {{ task.task_name }}
+              </h3>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-12">
+              <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+              </div>
+              <p class="text-gray-500 font-medium">No tasks found</p>
+              <p class="text-gray-400 text-sm mt-1">Try adjusting your search terms</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Users Section -->
+      <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 overflow-hidden hover:shadow-2xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
+          <h2 class="text-xl font-bold text-white flex items-center">
+            <svg class="w-6 h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+            </svg>
+            Users
+          </h2>
+        </div>
+        <div class="p-6 space-y-4 max-h-96 overflow-y-auto">
+          {% if users %}
+            {% for user in users %}
+            <div class="group p-4 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 hover:from-orange-100 hover:to-amber-100 border border-orange-100 hover:border-orange-200 transition-all duration-200 hover:shadow-md">
+              <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 bg-gradient-to-r from-orange-400 to-amber-400 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span class="text-white font-bold text-lg">
+                    {{ (user.name or user.username)[:1].upper() }}
+                  </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h3 class="font-semibold text-gray-900 group-hover:text-orange-700 transition-colors truncate">
+                    {{ user.name or user.username }}
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">
+                    Role: <span class="font-medium text-orange-600">{{ user.role.name }}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-12">
+              <div class="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
+                </svg>
+              </div>
+              <p class="text-gray-500 font-medium">No users found</p>
+              <p class="text-gray-400 text-sm mt-1">Try adjusting your search terms</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+/* Custom scrollbar styling */
+.max-h-96::-webkit-scrollbar {
+  width: 6px;
+}
+
+.max-h-96::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.max-h-96::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.max-h-96::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Smooth animations */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Glassmorphism effect enhancement */
+.bg-white\/70 {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.bg-white\/80 {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+</style>
+{% endblock %}

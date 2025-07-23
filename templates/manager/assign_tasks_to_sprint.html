@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Assign Tasks to Sprint{% endblock %}
+
+{% block content %}
+<h2>Assign Tasks to Sprint: {{ sprint.name }}</h2>
+
+<form method="POST">
+  <div>
+    <label>Select Tasks:</label><br>
+    {% for task in unassigned_tasks %}
+      <input type="checkbox" name="task_ids" value="{{ task.id }}">
+      {{ task.task_name }}<br>
+    {% else %}
+      <p>No unassigned tasks available.</p>
+    {% endfor %}
+  </div>
+
+  {% if unassigned_tasks %}
+    <button type="submit">Assign Selected Tasks</button>
+  {% endif %}
+</form>
+
+<a href="{{ url_for('manager.view_sprint', sprint_id=sprint.id) }}">← Back to Sprint</a>
+{% endblock %}

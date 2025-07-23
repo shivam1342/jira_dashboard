@@ -1,0 +1,350 @@
+<style>
+  .sidebar {
+    width: 280px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 20px;
+    height: fit-content;
+    max-height: calc(100vh - 40px);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideInLeft 0.6s ease-out;
+  }
+
+  .sidebar:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+  }
+
+  .sidebar-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .sidebar-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  }
+
+  .sidebar-header h2 {
+    color: rgba(255,255,255,0.95);
+    font-weight: 800;
+    font-size: 1.4rem;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .toggle-sidebar-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    padding: 8px 10px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    display: none;
+  }
+
+  .toggle-sidebar-btn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: scale(1.1);
+  }
+
+  .sidebar-nav {
+    padding: 20px 0;
+  }
+
+  .sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar-nav li {
+    margin: 0;
+    animation: fadeInUp 0.6s ease-out;
+    animation-fill-mode: both;
+  }
+
+  .sidebar-nav li:nth-child(1) { animation-delay: 0.1s; }
+  .sidebar-nav li:nth-child(2) { animation-delay: 0.2s; }
+  .sidebar-nav li:nth-child(3) { animation-delay: 0.3s; }
+  .sidebar-nav li:nth-child(4) { animation-delay: 0.4s; }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    padding: 14px 28px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar-nav a::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    transform: scaleY(0);
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.1), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .sidebar-nav a:hover {
+    color: white;
+    background: rgba(255,255,255,0.05);
+    transform: translateX(8px);
+    padding-left: 36px;
+  }
+
+  .sidebar-nav a:hover::before {
+    transform: scaleY(1);
+  }
+
+  .sidebar-nav a:hover::after {
+    opacity: 1;
+  }
+
+  .sidebar-nav a.active {
+    color: white;
+    background: rgba(102, 126, 234, 0.15);
+    border-left: 4px solid #667eea;
+  }
+
+  .sidebar-nav a.active::before {
+    transform: scaleY(1);
+  }
+
+  /* Role indicator */
+  .role-badge {
+    position: absolute;
+    top: -8px;
+    right: 20px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 8px rgba(240, 147, 251, 0.3);
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: fixed;
+      left: -280px;
+      top: 20px;
+      z-index: 1000;
+      height: calc(100vh - 40px);
+      transition: left 0.3s ease;
+    }
+
+    .sidebar.open {
+      left: 20px;
+    }
+
+    .toggle-sidebar-btn {
+      display: block;
+    }
+
+    .sidebar-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+  }
+
+  @keyframes slideInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Scrollbar styling */
+  .sidebar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .sidebar::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+    border-radius: 3px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2);
+    border-radius: 3px;
+  }
+
+  .sidebar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.3);
+  }
+</style>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <h2>Manager</h2>
+    <span class="role-badge">{{ session.get('role', 'user') }}</span>
+    <button id="toggleSidebar" class="toggle-sidebar-btn">&#9776;</button>
+  </div>
+
+  <nav class="sidebar-nav">
+    <ul>
+      <li><a href="{{ url_for('manager.manager_dashboard') }}" class="nav-link">🏠 Dashboard</a></li>
+      <li><a href="{{ url_for('developer.developer_dashboard') }}" class="nav-link">💻 Developer Dashboard</a></li>
+      <li><a href="{{ url_for('manager.create_project') }}" class="nav-link">📁 Create Project</a></li>
+      <li><a href="{{ url_for('auth.logout') }}" class="nav-link logout-link">🚪 Logout</a></li>
+    </ul>
+  </nav>
+</aside>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const sidebar = document.getElementById('sidebar');
+  const toggleBtn = document.getElementById('toggleSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  const navLinks = document.querySelectorAll('.nav-link');
+  
+  // Toggle sidebar on mobile
+  toggleBtn.addEventListener('click', function() {
+    sidebar.classList.toggle('open');
+    overlay.classList.toggle('show');
+  });
+  
+  // Close sidebar when clicking overlay
+  overlay.addEventListener('click', function() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+  });
+  
+  // Set active nav link
+  const currentPath = window.location.pathname;
+  navLinks.forEach(link => {
+    if (link.getAttribute('href') === currentPath) {
+      link.classList.add('active');
+    }
+    
+    // Add click effect
+    link.addEventListener('click', function(e) {
+      // Remove active from all links
+      navLinks.forEach(l => l.classList.remove('active'));
+      // Add active to clicked link (except logout)
+      if (!this.classList.contains('logout-link')) {
+        this.classList.add('active');
+      }
+      
+      // Add ripple effect
+      const ripple = document.createElement('span');
+      const rect = this.getBoundingClientRect();
+      const size = Math.max(rect.width, rect.height);
+      const x = e.clientX - rect.left - size / 2;
+      const y = e.clientY - rect.top - size / 2;
+      
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = x + 'px';
+      ripple.style.top = y + 'px';
+      ripple.style.position = 'absolute';
+      ripple.style.borderRadius = '50%';
+      ripple.style.background = 'rgba(255,255,255,0.3)';
+      ripple.style.transform = 'scale(0)';
+      ripple.style.animation = 'ripple 0.6s linear';
+      ripple.style.pointerEvents = 'none';
+      
+      this.style.position = 'relative';
+      this.appendChild(ripple);
+      
+      setTimeout(() => ripple.remove(), 600);
+    });
+  });
+  
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.altKey && e.key === 'm') {
+      e.preventDefault();
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('show');
+    }
+  });
+});
+
+// Add ripple animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes ripple {
+    to {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+`;
+document.head.appendChild(style);
+</script>

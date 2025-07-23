@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Handle Visitors</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f3f4f6;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: #1f2937;
+      margin-bottom: 2rem;
+    }
+
+    .visitor-table {
+      width: 100%;
+      max-width: 1100px;
+      margin: auto;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .visitor-table th, .visitor-table td {
+      padding: 14px 18px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    .visitor-table th {
+      background-color: #f1f5f9;
+      color: #374151;
+    }
+
+    .visitor-table td {
+      color: #374151;
+    }
+
+    .form-inline {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select, button {
+      padding: 8px 12px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 0.95rem;
+    }
+
+    select {
+      min-width: 180px;
+      background-color: #f9fafb;
+    }
+
+    .approve-btn {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .approve-btn:hover {
+      background-color: #059669;
+    }
+
+    .suspend-btn {
+      background-color: #ef4444;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    .suspend-btn:hover {
+      background-color: #dc2626;
+    }
+
+    .no-visitors {
+      text-align: center;
+      margin-top: 2rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+
+<h1>🧑‍💼 Pending Visitors</h1>
+
+{% if visitors %}
+  <table class="visitor-table">
+    <thead>
+      <tr>
+        <th>Visitor Name</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Assign Project</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for visitor in visitors %}
+        <tr>
+          <td>{{ visitor.profile.name if visitor.profile else "Unnamed" }}</td>
+          <td>{{ visitor.username }}</td>
+          <td>{{ visitor.email or '—' }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.approve_visitor') }}" class="form-inline">
+              <input type="hidden" name="visitor_id" value="{{ visitor.id }}">
+              <select name="project_id" required>
+                <option value="">-- Select Project --</option>
+                {% for project in projects %}
+                  <option value="{{ project.id }}">{{ project.name }}</option>
+                {% endfor %}
+              </select>
+              <button type="submit" class="approve-btn">Approve & Assign</button>
+            </form>
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.suspend_visitor', visitor_id=visitor.id) }}">
+              <button type="submit" class="suspend-btn" onclick="return confirm('Are you sure you want to suspend this visitor?')">Suspend</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p class="no-visitors">No pending visitors at the moment.</p>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,160 @@
+.sidebar {
+  width: 240px;
+  background-color: #023E8A;
+  color: #fff;
+  height: 100vh;
+  position: fixed;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+
+.sidebar.collapsed {
+  transform: translateX(-100%);
+}
+
+.sidebar h2 {
+  text-align: center;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar ul li {
+  padding: 0.75rem 1rem;
+  transition: background 0.3s;
+}
+
+.sidebar ul li:hover {
+  background-color: #0077B6;
+  cursor: pointer;
+}
+
+.sidebar ul li a {
+  color: #fff;
+  text-decoration: none;
+  display: block;
+}
+
+.toggle-sidebar-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #fff;
+  margin-left: 1rem;
+  cursor: pointer;
+}
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background-color: #1e293b;
+  color: white;
+  position: fixed;
+  left: 0;
+  top: 0;
+  transition: all 0.3s ease;
+  overflow-x: hidden;
+  z-index: 1000;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #0f172a;
+  border-bottom: 1px solid #334155;
+}
+
+.sidebar-header h2 {
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: opacity 0.3s ease;
+}
+
+.sidebar.collapsed .sidebar-header h2 {
+  opacity: 0;
+}
+
+.toggle-sidebar-btn {
+  background: none;
+  color: white;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.sidebar-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  padding: 14px 20px;
+  border-bottom: 1px solid #334155;
+}
+
+.sidebar-nav li a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  font-size: 15px;
+  transition: background 0.3s;
+}
+
+.sidebar-nav li a:hover {
+  background-color: #334155;
+  border-radius: 5px;
+}
+
+/* Content Shift When Sidebar Collapses */
+body.with-sidebar {
+  padding-left: 220px;
+  transition: padding-left 0.3s ease;
+}
+
+body.sidebar-collapsed {
+  padding-left: 60px;
+}
+/* Layout */
+.main-layout {
+  display: flex;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  transition: width 0.3s ease;
+  background: #1e293b;
+  color: white;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Collapsed sidebar */
+.sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  border: none;
+}
+
+/* Content area */
+.content {
+  flex: 1;
+  padding: 20px;
+  transition: margin-left 0.3s ease;
+}
+
+/* Optional: if you want spacing adjustment */
+body.sidebar-collapsed .content {
+  margin-left: 0;
+}

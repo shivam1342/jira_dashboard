@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Edit Sprint</h2>
+
+<form method="POST">
+    <label>Name:</label><br>
+    <input type="text" name="name" value="{{ sprint.name }}" required><br><br>
+
+    <label>Start Date:</label><br>
+    <input type="date" name="start_date" value="{{ sprint.start_date }}" required><br><br>
+
+    <label>End Date:</label><br>
+    <input type="date" name="end_date" value="{{ sprint.end_date }}" required><br><br>
+
+    <label>Goal:</label><br>
+    <textarea name="goal">{{ sprint.goal }}</textarea><br><br>
+
+    <button type="submit">Save Changes</button>
+</form>
+
+<a href="{{ url_for('manager.view_sprint', sprint_id=sprint.id) }}">Cancel</a>
+{% endblock %}
