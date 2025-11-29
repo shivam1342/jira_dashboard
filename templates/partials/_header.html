@@ -1,0 +1,263 @@
+<style>
+  .main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 32px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+    animation: slideDown 0.6s ease-out;
+  }
+
+  .main-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.8s ease;
+  }
+
+  .main-header:hover::before {
+    left: 100%;
+  }
+
+  .welcome-message h2 {
+    color: rgba(255,255,255,0.95);
+    font-weight: 700;
+    font-size: 1.5rem;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: fadeInLeft 0.8s ease-out;
+  }
+
+  .search-bar {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 50px;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+  }
+
+  .search-bar:hover,
+  .search-bar:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    background: rgba(255,255,255,0.15);
+  }
+
+  .search-bar input {
+    background: transparent;
+    border: none;
+    padding: 14px 20px;
+    color: rgba(255,255,255,0.9);
+    font-size: 14px;
+    width: 300px;
+    outline: none;
+    font-weight: 500;
+  }
+
+  .search-bar input::placeholder {
+    color: rgba(255,255,255,0.6);
+  }
+
+  .search-bar button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 14px 18px;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .search-bar button:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+    transform: scale(1.05);
+  }
+
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    animation: fadeInRight 0.8s ease-out 0.4s both;
+  }
+
+  .user-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+
+  .user-avatar:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+
+  .settings-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 12px;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .settings-btn:hover {
+    background: rgba(255,255,255,0.2);
+    transform: rotate(90deg);
+  }
+
+  @media (max-width: 768px) {
+    .main-header {
+      flex-direction: column;
+      gap: 16px;
+      padding: 20px;
+    }
+
+    .search-bar {
+      order: 3;
+      width: 100%;
+    }
+
+    .search-bar input {
+      width: 100%;
+      flex: 1;
+    }
+
+    .welcome-message h2 {
+      font-size: 1.25rem;
+      text-align: center;
+    }
+
+    .header-right {
+      order: 2;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInRight {
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+</style>
+
+<header class="main-header">
+  <div class="welcome-message">
+    <h2>Welcome, {{ session.get('username') or 'Unknown User' }}</h2>
+  </div>
+
+  <form method="GET" action="{{ url_for('common.search') }}" class="search-bar">
+    <input type="text" name="q" placeholder="Search projects, teams, users..." required>
+    <button type="submit">🔍</button>
+  </form>
+
+  <div class="header-right">
+    <div class="user-avatar">
+      {{ (session.get('username') or 'U')[0].upper() }}
+    </div>
+    <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+  </div>
+</header>
+
+<script>
+function toggleSettings() {
+  // Placeholder for settings functionality
+  console.log('Settings clicked');
+  // You can add settings dropdown/modal here
+}
+
+// Enhanced search functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const searchInput = document.querySelector('.search-bar input');
+  const searchForm = document.querySelector('.search-bar');
+  
+  // Add search suggestions (placeholder)
+  searchInput.addEventListener('input', function(e) {
+    const query = e.target.value;
+    if (query.length > 2) {
+      // Add search suggestions logic here
+      console.log('Searching for:', query);
+    }
+  });
+  
+  // Add enter key enhancement
+  searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      searchForm.submit();
+    }
+  });
+});
+</script>

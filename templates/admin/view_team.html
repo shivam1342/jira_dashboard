@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Team - {{ team.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6b7280;
+            --background-color: #f9fafb;
+            --sidebar-bg: #1f2937;
+            --sidebar-text: #d1d5db;
+            --sidebar-text-hover: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #111827;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            padding-top: 1.5rem;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--sidebar-text-hover);
+            border-bottom: 1px solid #374151;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1.5rem 0;
+            margin: 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: var(--primary-color);
+            color: var(--sidebar-text-hover);
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #374151;
+        }
+
+        .logout-button {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #dc2626;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .action-button {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
+
+        .action-button:hover {
+            background-color: #3730a3;
+        }
+
+        .content-section {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+            margin-bottom: 2rem;
+        }
+
+        .content-section h3 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .team-info p {
+            margin: 0.5rem 0;
+            color: var(--secondary-color);
+        }
+
+        .team-info strong {
+            color: var(--text-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--secondary-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--secondary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">Admin Panel</div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('admin.create_user') }}">Create User</a></li>
+        <li><a href="{{ url_for('admin.view_users') }}">View Users</a></li>
+        <li><a href="{{ url_for('admin.create_team') }}" class="active">Create Team</a></li>
+        <li><a href="{{ url_for('admin.handle_visitors') }}">View Visitors</a></li>
+        <li><a href="{{ url_for('admin.reports') }}">Reports</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="logout-button">Logout</a>
+    </div>
+</div>
+
+<main class="main-content">
+    <header>
+        <h1>Team: {{ team.name }}</h1>
+        <a href="{{ url_for('admin.edit_team', team_id=team.id) }}" class="action-button">Edit Team</a>
+    </header>
+
+    <div class="content-section team-info">
+        <h3>Team Details</h3>
+        <p><strong>Description:</strong> {{ team.description or 'No description provided.' }}</p>
+        <p><strong>Manager:</strong> {{ team.manager.username if team.manager else 'Unassigned' }}</p>
+    </div>
+
+    <div class="content-section">
+        <h3>Team Members</h3>
+        {% if members %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in members %}
+                <tr>
+                    <td>{{ member.username }}</td>
+                    <td>{{ member.profile.name if member.profile else '—' }}</td>
+                    <td>{{ member.profile.gmail if member.profile else '—' }}</td>
+                    <td>{{ member.profile.phone if member.profile else '—' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="empty-state">No members in this team yet.</p>
+        {% endif %}
+    </div>
+</main>
+
+</body>
+</html>

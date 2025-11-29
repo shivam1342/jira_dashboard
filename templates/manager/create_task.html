@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Task</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      margin: 40px;
+      color: #334155;
+    }
+
+    h2 {
+      font-size: 26px;
+      margin-bottom: 20px;
+    }
+
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      font-weight: 600;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    button {
+      margin-top: 20px;
+      background-color: #3b82f6;
+      color: white;
+      padding: 10px 16px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #64748b;
+      text-decoration: none;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Create New Task</h2>
+
+  <form method="POST">
+    <label for="name">Task Name</label>
+    <input type="text" name="name" id="name" required>
+
+    <label for="summary">Summary</label>
+    <input type="text" name="summary" id="summary">
+
+    <label for="description">Description</label>
+    <textarea name="description" id="description"></textarea>
+
+    <label for="due_date">Due Date</label>
+    <input type="date" name="due_date" id="due_date" required>
+
+    <label for="assigned_to">Assign To</label>
+    <select name="assigned_to" id="assigned_to" required>
+      <option value="" disabled selected>-- Select Developer --</option>
+      {% for user in users %}
+        <option value="{{ user.id }}">{{ user.username }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit">Create Task</button>
+  </form>
+
+  <a href="{{ url_for('manager.view_project_details', project_id=project_id) }}" class="back-link">← Back to Project Details</a>
+
+</body>
+</html>

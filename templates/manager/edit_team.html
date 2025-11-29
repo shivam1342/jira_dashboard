@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}Edit Team{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Edit Team</h2>
+
+<div class="card">
+  <form method="POST" action="{{ url_for('manager.edit_team', team_id=team.id) }}">
+    <div class="form-group">
+      <label for="name">Team Name</label>
+      <input type="text" name="name" value="{{ team.name }}" required>
+    </div>
+
+    <div class="form-group">
+      <label for="description">Description (optional)</label>
+      <textarea name="description" rows="4">{{ team.description or '' }}</textarea>
+    </div>
+
+    <button type="submit" class="btn-primary">Update Team</button>
+  </form>
+</div>
+{% endblock %}

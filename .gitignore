@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+instance/
+.env
+#zip -r project.zip MVP_Project -x "venv/*" -x "__pycache__/*" -x "*.pyc" -x "*.pyo" -x "*.db" -x "*.log"

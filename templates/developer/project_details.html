@@ -1,0 +1,735 @@
+{% extends 'dev_base.html' %}
+{% block title %}Project Details{% endblock %}
+
+{% block content %}
+<div class="flex h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+  <!-- Enhanced Sidebar -->
+  <div class="w-80 bg-white/80 backdrop-blur-sm border-r border-slate-200 shadow-lg hidden md:block">
+    <div class="p-6 border-b border-slate-200 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
+      <div class="text-2xl font-bold mb-2">{{ project.name }}</div>
+      <div class="text-blue-100 text-sm leading-relaxed">{{ project.summary or "No summary provided." }}</div>
+    </div>
+    
+    <div class="p-6 space-y-4">
+      <a href="{{ url_for('developer.create_task', project_id=project.id) }}"
+         class="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-3 px-4 rounded-xl font-semibold transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Create Task
+      </a>
+      
+      <!-- Quick Stats -->
+      <div class="bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl p-4 space-y-3">
+        <h3 class="font-semibold text-slate-700 text-sm uppercase tracking-wide">Quick Stats</h3>
+        <div class="grid grid-cols-2 gap-3 text-center">
+          <div class="bg-white rounded-lg p-3 shadow-sm">
+            <div class="text-2xl font-bold text-blue-600" id="sidebar-total">{{ all_tasks|length }}</div>
+            <div class="text-xs text-slate-500">Total Tasks</div>
+          </div>
+          <div class="bg-white rounded-lg p-3 shadow-sm">
+            {% set completed_count = all_tasks|selectattr('completion_status.name', 'equalto', 'completed')|list|length %}
+            <div class="text-2xl font-bold text-green-600" id="sidebar-completed">{{ completed_count }}</div>
+            <div class="text-xs text-slate-500">Completed</div>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg p-3 shadow-sm">
+          {% set progress = ((completed_count / all_tasks|length * 100)|round|int) if all_tasks|length > 0 else 0 %}
+          <div class="text-lg font-bold text-purple-600" id="sidebar-progress">{{ progress }}%</div>
+          <div class="text-xs text-slate-500">Progress</div>
+          <div class="w-full bg-slate-200 rounded-full h-2 mt-2">
+            <div id="sidebar-progress-bar" class="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300" style="width: {{ progress }}%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <!-- Enhanced Tab Navigation -->
+    <div class="bg-white/90 backdrop-blur-sm border-b border-slate-200 px-6 pt-6 shadow-sm">
+      <div class="flex space-x-1 bg-slate-100/60 rounded-xl p-1 backdrop-blur-sm border border-slate-200/50">
+        <button onclick="showTab('board')" class="tab-btn active flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 bg-white text-slate-800 shadow-sm">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+          Board
+        </button>
+        <button onclick="showTab('list')" class="tab-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 text-slate-600 hover:text-slate-800 hover:bg-white/50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+          </svg>
+          List
+        </button>
+        <button onclick="showTab('summary')" class="tab-btn flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-semibold text-sm transition-all duration-200 text-slate-600 hover:text-slate-800 hover:bg-white/50">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+          Analytics
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content Container -->
+    <div class="flex-1 overflow-y-auto p-6">
+      <!-- Enhanced Kanban Board -->
+      <div class="tab-content" id="board">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 h-full">
+          {% set kanban_statuses = ['to_do', 'in_progress', 'completed', 'failed'] %}
+          {% set status_configs = {
+            'to_do': {'color': 'amber', 'icon': 'clock', 'title': 'To Do'},
+            'in_progress': {'color': 'blue', 'icon': 'play', 'title': 'In Progress'},
+            'completed': {'color': 'green', 'icon': 'check', 'title': 'Completed'},
+            'failed': {'color': 'red', 'icon': 'x', 'title': 'Failed'}
+          } %}
+
+          {% for status in kanban_statuses %}
+          {% set config = status_configs[status] %}
+          {% set status_tasks = all_tasks | selectattr('completion_status.name', 'equalto', status) | list %}
+          <div class="kanban-column bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-4 flex flex-col min-h-96"
+               data-status="{{ status }}"
+               ondragover="allowDrop(event)"
+               ondrop="handleDrop(event)"
+               ondragleave="handleDragLeave(event)">
+
+            <!-- Column Header -->
+            <div class="flex items-center gap-3 pb-4 mb-4 border-b border-slate-200">
+              <div class="p-2 rounded-lg bg-{{ config.color }}-100">
+                {% if config.icon == 'clock' %}
+                <svg class="w-4 h-4 text-{{ config.color }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                {% elif config.icon == 'play' %}
+                <svg class="w-4 h-4 text-{{ config.color }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                {% elif config.icon == 'check' %}
+                <svg class="w-4 h-4 text-{{ config.color }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                {% else %}
+                <svg class="w-4 h-4 text-{{ config.color }}-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                {% endif %}
+              </div>
+              <div>
+                <h3 class="font-bold text-slate-800">{{ config.title }}</h3>
+                <span class="text-sm text-slate-500 task-count" data-status="{{ status }}">
+                  {{ status_tasks | length }} task{{ 's' if status_tasks | length != 1 else '' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Tasks Container -->
+            <div class="flex-1 space-y-3 task-container" data-status="{{ status }}">
+              {% for task in status_tasks %}
+              <div class="kanban-task group bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-slate-200/50 hover:shadow-lg hover:border-{{ config.color }}-300 transition-all duration-200 cursor-move transform hover:-translate-y-1 hover:bg-white"
+                   draggable="true"
+                   data-task-id="{{ task.id }}"
+                   data-status="{{ status }}"
+                   ondragstart="handleDragStart(event)">
+                <div class="flex items-start justify-between mb-2">
+                  <h4 class="font-semibold text-slate-800 text-sm group-hover:text-{{ config.color }}-700 transition-colors line-clamp-2">{{ task.task_name }}</h4>
+                  <div class="w-3 h-3 rounded-full bg-{{ config.color }}-400 flex-shrink-0 ml-2"></div>
+                </div>
+                <p class="text-xs text-slate-600 leading-relaxed line-clamp-3 mb-3">{{ task.summary or 'No summary available.' }}</p>
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+                  <span class="text-xs px-2 py-1 bg-{{ config.color }}-100 text-{{ config.color }}-700 rounded-full font-medium">
+                    {{ config.title }}
+                  </span>
+                  <svg class="w-4 h-4 text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"></path>
+                  </svg>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state text-center py-8 text-slate-400 {{ 'hidden' if status_tasks | length > 0 else '' }}">
+              <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+              <p class="text-sm">No tasks here yet</p>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Enhanced List View -->
+      <div id="list" class="tab-content hidden">
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 overflow-hidden">
+          <div class="bg-gradient-to-r from-slate-50 to-slate-100 px-6 py-4 border-b border-slate-200">
+            <h3 class="text-xl font-bold text-slate-800">All Tasks</h3>
+            <p class="text-slate-600 text-sm">Comprehensive view of all project tasks</p>
+          </div>
+
+          <div id="list-container" class="divide-y divide-slate-200">
+            {% if all_tasks %}
+              {% for task in all_tasks %}
+              {% set config = status_configs[task.completion_status.name] %}
+              
+              <a href="{{ url_for('developer.view_task_details', task_id=task.id) }}" 
+                 class="block hover:bg-slate-50 transition-colors no-underline text-inherit">
+                <div class="list-task p-6" data-task-id="{{ task.id }}" data-status="{{ task.completion_status.name }}">
+                  <div class="flex items-center justify-between">
+                    <div class="flex-1">
+                      <div class="flex items-center gap-3 mb-2">
+                        <h4 class="font-semibold text-slate-800">{{ task.task_name }}</h4>
+                        <span class="task-status-badge px-3 py-1 bg-{{ config.color }}-100 text-{{ config.color }}-700 text-xs font-medium rounded-full">
+                          {{ config.title }}
+                        </span>
+                      </div>
+                      <p class="text-sm text-slate-600">{{ task.summary or 'No summary available.' }}</p>
+                    </div>
+                    <div class="task-status-dot w-4 h-4 rounded-full bg-{{ config.color }}-400"></div>
+                  </div>
+                </div>
+              </a>
+              {% endfor %}
+            {% endif %}
+          </div>
+
+          <div id="list-empty-state" class="text-center py-16 {{ 'hidden' if all_tasks else '' }}">
+            <svg class="w-16 h-16 mx-auto mb-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <p class="text-slate-500 text-lg">No tasks added to this project yet</p>
+            <a href="{{ url_for('developer.create_task', project_id=project.id) }}" 
+               class="inline-flex items-center gap-2 mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-semibold transition-colors">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              </svg>
+              Create First Task
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Enhanced Summary View -->
+      <div id="summary" class="tab-content hidden space-y-6">
+        <div class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-slate-200/50 p-6">
+          <h3 class="text-2xl font-bold text-slate-800 mb-6">Project Analytics</h3>
+          
+          <!-- Top Stats Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            {% set counts = {'to_do': 0, 'in_progress': 0, 'completed': 0, 'failed': 0} %}
+            {% for task in all_tasks %}
+              {% set _ = counts.update({task.completion_status.name: counts[task.completion_status.name] + 1}) %}
+            {% endfor %}
+            
+            <div class="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-6 border border-amber-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-amber-600 font-semibold text-sm uppercase tracking-wide">To Do</p>
+                  <p class="text-3xl font-bold text-amber-800" id="count-to_do">{{ counts['to_do'] }}</p>
+                </div>
+                <div class="p-3 bg-amber-200 rounded-full">
+                  <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-blue-600 font-semibold text-sm uppercase tracking-wide">In Progress</p>
+                  <p class="text-3xl font-bold text-blue-800" id="count-in_progress">{{ counts['in_progress'] }}</p>
+                </div>
+                <div class="p-3 bg-blue-200 rounded-full">
+                  <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-green-600 font-semibold text-sm uppercase tracking-wide">Completed</p>
+                  <p class="text-3xl font-bold text-green-800" id="count-completed">{{ counts['completed'] }}</p>
+                </div>
+                <div class="p-3 bg-green-200 rounded-full">
+                  <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-6 border border-red-200">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-red-600 font-semibold text-sm uppercase tracking-wide">Failed</p>
+                  <p class="text-3xl font-bold text-red-800" id="count-failed">{{ counts['failed'] }}</p>
+                </div>
+                <div class="p-3 bg-red-200 rounded-full">
+                  <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Progress Doughnut Chart -->
+            <div class="lg:col-span-1 bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50">
+              <h4 class="text-lg font-semibold text-slate-800 mb-4">Task Distribution</h4>
+              <div class="flex items-center justify-center">
+                <canvas id="progressChart" width="200" height="200"></canvas>
+              </div>
+              <div class="mt-4 space-y-2">
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                    <span>Completed</span>
+                  </div>
+                  <span class="font-semibold">{{ counts['completed'] }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-blue-400"></div>
+                    <span>In Progress</span>
+                  </div>
+                  <span class="font-semibold">{{ counts['in_progress'] }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-amber-400"></div>
+                    <span>To Do</span>
+                  </div>
+                  <span class="font-semibold">{{ counts['to_do'] }}</span>
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                  <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                    <span>Failed</span>
+                  </div>
+                  <span class="font-semibold">{{ counts['failed'] }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Progress Overview -->
+            <div class="lg:col-span-2 bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50">
+              <h4 class="text-lg font-semibold text-slate-800 mb-6">Progress Overview</h4>
+              
+              <!-- Overall Progress Bar -->
+              <div class="mb-6">
+                <div class="flex justify-between items-center mb-2">
+                  <span class="text-sm font-medium text-slate-700">Overall Progress</span>
+                  <span class="text-sm font-bold text-slate-800" id="overall-progress">{{ progress }}%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-3">
+                  <div class="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full transition-all duration-500" style="width: {{ progress }}%"></div>
+                </div>
+              </div>
+
+              <!-- Status Breakdown Bars -->
+              <div class="space-y-4">
+                {% for status, count in counts.items() %}
+                {% set config = status_configs[status] %}
+                {% set percentage = ((count / all_tasks|length * 100)|round|int) if all_tasks|length > 0 else 0 %}
+                <div>
+                  <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium text-slate-700">{{ config.title }}</span>
+                    <span class="text-xs text-slate-500">{{ count }} tasks ({{ percentage }}%)</span>
+                  </div>
+                  <div class="w-full bg-slate-100 rounded-full h-2">
+                    <div class="bg-{{ config.color }}-400 h-2 rounded-full transition-all duration-300" style="width: {{ percentage }}%"></div>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+
+              <!-- Quick Insights -->
+              <div class="mt-6 pt-6 border-t border-slate-200">
+                <h5 class="font-semibold text-slate-800 mb-3">Quick Insights</h5>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div class="bg-slate-50 rounded-lg p-3">
+                    <div class="font-medium text-slate-700 mb-1">Completion Rate</div>
+                    <div class="text-2xl font-bold text-green-600">{{ progress }}%</div>
+                  </div>
+                  <div class="bg-slate-50 rounded-lg p-3">
+                    <div class="font-medium text-slate-700 mb-1">Active Tasks</div>
+                    <div class="text-2xl font-bold text-blue-600">{{ counts['in_progress'] }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="mt-6 bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-slate-200/50">
+            <h4 class="text-lg font-semibold text-slate-800 mb-4">All Tasks</h4>
+            <div class="space-y-3">
+              {% if all_tasks %}
+                {% for task in all_tasks %}
+                {% set config = status_configs[task.completion_status.name] %}
+                <div class="flex items-center gap-4 p-3 bg-slate-50/50 rounded-lg">
+                  <div class="w-2 h-2 rounded-full bg-{{ config.color }}-400"></div>
+                  <div class="flex-1">
+                    <div class="font-medium text-slate-800">{{ task.task_name }}</div>
+                    <div class="text-sm text-slate-500">Status: {{ config.title }}</div>
+                    <div class="text-xs text-slate-400 mt-1">Developer: {{ task.assignee.username if task.assignee else 'Unassigned' }}</div>
+                  </div>
+                </div>
+                {% endfor %}
+              {% else %}
+                <div class="text-center py-8 text-slate-400">
+                  <p>No tasks to display</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript for Enhanced Functionality -->
+<script>
+// Tab switching functionality
+function showTab(tabName) {
+  // Hide all tab contents
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.add('hidden');
+  });
+  
+  // Remove active class from all buttons
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active', 'bg-white', 'text-slate-800', 'shadow-sm');
+    btn.classList.add('text-slate-600', 'hover:text-slate-800', 'hover:bg-white/50');
+  });
+  // Show selected tab
+  document.getElementById(tabName).classList.remove('hidden');
+  
+  // Add active class to clicked button
+  event.target.classList.add('active', 'bg-white', 'text-slate-800', 'shadow-sm');
+  event.target.classList.remove('text-slate-600', 'hover:text-slate-800', 'hover:bg-white/50');
+}
+
+// Initialize Chart.js for the progress chart
+document.addEventListener('DOMContentLoaded', function() {
+  const ctx = document.getElementById('progressChart');
+  if (ctx) {
+    const chartData = {
+      labels: ['Completed', 'In Progress', 'To Do', 'Failed'],
+      datasets: [{
+        data: [
+          {{ counts['completed'] }},
+          {{ counts['in_progress'] }},
+          {{ counts['to_do'] }},
+          {{ counts['failed'] }}
+        ],
+        backgroundColor: [
+          '#10B981', // Green for completed
+          '#3B82F6', // Blue for in progress
+          '#F59E0B', // Amber for to do
+          '#EF4444'  // Red for failed
+        ],
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    };
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: chartData,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          }
+        },
+        cutout: '60%'
+      }
+    });
+  }
+});
+
+// Fixed Drag and Drop Functionality
+let draggedTask = null;
+
+function handleDragStart(e) {
+  draggedTask = e.target;
+  e.target.style.opacity = '0.5';
+  e.target.classList.add('dragging');
+  
+  // Set drag data
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/html', e.target.outerHTML);
+}
+
+function handleDragEnd(e) {
+  e.target.style.opacity = '1';
+  e.target.classList.remove('dragging');
+  
+  // Remove drag-over class from all columns
+  document.querySelectorAll('.kanban-column').forEach(column => {
+    column.classList.remove('drag-over');
+  });
+}
+
+function allowDrop(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  
+  // Add visual feedback
+  const column = e.currentTarget;
+  if (column.classList.contains('kanban-column')) {
+    column.classList.add('drag-over');
+  }
+}
+
+function handleDragLeave(e) {
+  // Only remove if we're actually leaving the column
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  
+  const column = e.currentTarget;
+  column.classList.remove('drag-over');
+  
+  if (draggedTask) {
+    const newStatus = column.dataset.status;
+    const taskId = draggedTask.dataset.taskId;
+    const currentStatus = draggedTask.dataset.status;
+    
+    if (newStatus !== currentStatus) {
+      // Move the task to the new column immediately for better UX
+      const taskContainer = column.querySelector('.task-container');
+      const emptyState = column.querySelector('.empty-state');
+      
+      // Hide empty state if exists
+      if (emptyState) {
+        emptyState.classList.add('hidden');
+      }
+      
+      // Update task status attribute
+      draggedTask.dataset.status = newStatus;
+      
+      // Move task to new container
+      taskContainer.appendChild(draggedTask);
+      
+      // Update UI elements
+      updateTaskAppearance(draggedTask, newStatus);
+      updateColumnCounts();
+      updateSidebarStats();
+      
+      // Update database
+      updateTaskStatusInDB(taskId, newStatus);
+    }
+  }
+  
+  draggedTask = null;
+}
+
+function updateTaskAppearance(taskElement, newStatus) {
+  const statusConfigs = {
+    'to_do': { color: 'amber', title: 'To Do' },
+    'in_progress': { color: 'blue', title: 'In Progress' },
+    'completed': { color: 'green', title: 'Completed' },
+    'failed': { color: 'red', title: 'Failed' }
+  };
+  
+  const config = statusConfigs[newStatus];
+  
+  // Update status dot
+  const statusDot = taskElement.querySelector('.w-3.h-3.rounded-full');
+  if (statusDot) {
+    statusDot.className = `w-3 h-3 rounded-full bg-${config.color}-400 flex-shrink-0 ml-2`;
+  }
+  
+  // Update status badge
+  const statusBadge = taskElement.querySelector('.text-xs.px-2.py-1');
+  if (statusBadge) {
+    statusBadge.className = `text-xs px-2 py-1 bg-${config.color}-100 text-${config.color}-700 rounded-full font-medium`;
+    statusBadge.textContent = config.title;
+  }
+  
+  // Update hover effects
+  taskElement.className = taskElement.className.replace(/hover:border-\w+-300/g, `hover:border-${config.color}-300`);
+}
+
+// Update task status in database
+function updateTaskStatusInDB(taskId, newStatus) {
+  // Get CSRF token
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                   document.querySelector('[name="csrf-token"]')?.getAttribute('content');
+  
+  fetch(`/developer/api/tasks/${taskId}/status`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({
+      status: newStatus
+    })
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .then(data => {
+    if (data.success) {
+      showNotification('Task status updated successfully', 'success');
+      
+      // Update analytics if visible
+      if (!document.getElementById('summary').classList.contains('hidden')) {
+        updateAnalytics();
+      }
+    } else {
+      showNotification(data.message || 'Failed to update task status', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showNotification('An error occurred while updating task status', 'error');
+  });
+}
+
+// Initialize drag and drop when page loads
+document.addEventListener('DOMContentLoaded', function() {
+  initializeDragAndDrop();
+});
+
+function initializeDragAndDrop() {
+  // Add event listeners to all kanban tasks
+  document.querySelectorAll('.kanban-task').forEach(task => {
+    task.draggable = true;
+    task.addEventListener('dragstart', handleDragStart);
+    task.addEventListener('dragend', handleDragEnd);
+  });
+  
+  // Add event listeners to all kanban columns
+  document.querySelectorAll('.kanban-column').forEach(column => {
+    column.addEventListener('dragover', allowDrop);
+    column.addEventListener('drop', handleDrop);
+    column.addEventListener('dragleave', handleDragLeave);
+  });
+}
+
+// Update column task counts
+function updateColumnCounts() {
+  document.querySelectorAll('.kanban-column').forEach(column => {
+    const status = column.dataset.status;
+    const taskContainer = column.querySelector('.task-container');
+    const taskCount = taskContainer.querySelectorAll('.kanban-task').length;
+    const countElement = column.querySelector(`.task-count[data-status="${status}"]`);
+    
+    if (countElement) {
+      countElement.textContent = `${taskCount} task${taskCount !== 1 ? 's' : ''}`;
+    }
+    
+    // Show/hide empty state
+    const emptyState = column.querySelector('.empty-state');
+    if (emptyState) {
+      emptyState.classList.toggle('hidden', taskCount > 0);
+    }
+  });
+}
+
+// Update sidebar statistics
+function updateSidebarStats() {
+  const totalTasks = document.querySelectorAll('.kanban-task').length;
+  const completedTasks = document.querySelectorAll('.kanban-task[data-status="completed"]').length;
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+  
+  const sidebarTotal = document.getElementById('sidebar-total');
+  const sidebarCompleted = document.getElementById('sidebar-completed');
+  const sidebarProgress = document.getElementById('sidebar-progress');
+  const sidebarProgressBar = document.getElementById('sidebar-progress-bar');
+  
+  if (sidebarTotal) sidebarTotal.textContent = totalTasks;
+  if (sidebarCompleted) sidebarCompleted.textContent = completedTasks;
+  if (sidebarProgress) sidebarProgress.textContent = `${progress}%`;
+  if (sidebarProgressBar) sidebarProgressBar.style.width = `${progress}%`;
+}
+
+// Show notification messages
+function showNotification(message, type) {
+  // Remove any existing notifications
+  document.querySelectorAll('.notification').forEach(n => n.remove());
+  
+  const notification = document.createElement('div');
+  notification.className = `notification fixed top-4 right-4 px-6 py-3 rounded-lg text-white font-semibold shadow-lg z-50 transform transition-all duration-300 translate-x-full ${
+    type === 'success' ? 'bg-green-500' : 'bg-red-500'
+  }`;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  // Animate in
+  setTimeout(() => {
+    notification.classList.remove('translate-x-full');
+  }, 100);
+  
+  // Remove after 3 seconds
+  setTimeout(() => {
+    notification.classList.add('translate-x-full');
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
+}
+
+// Add required CSS for drag and drop
+const dragDropStyles = `
+  .drag-over {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+    border-color: #3B82F6 !important;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+  }
+  
+  .dragging {
+    transform: rotate(5deg) scale(0.95);
+    z-index: 1000;
+  }
+  
+  .kanban-task {
+    cursor: move;
+    user-select: none;
+  }
+  
+  .kanban-task:active {
+    cursor: grabbing;
+  }
+`;
+
+// Add styles to head
+const styleSheet = document.createElement('style');
+styleSheet.textContent = dragDropStyles;
+document.head.appendChild(styleSheet);
+
+// Add Chart.js CDN if not already loaded
+if (typeof Chart === 'undefined') {
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+  document.head.appendChild(script);
+}
+</script>
+
+{% endblock %}

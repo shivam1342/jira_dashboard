@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Project Detail</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      padding: 40px;
+    }
+
+    h2 {
+      color: #1e293b;
+      margin-bottom: 20px;
+    }
+
+    .detail-container {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .section-title {
+      color: #1e293b;
+      font-size: 20px;
+      font-weight: 600;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    .info-box {
+      background: #f9fafb;
+      border: 1px solid #e2e8f0;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+
+    .progress-bar {
+      height: 18px;
+      background-color: #e5e7eb;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background-color: #22c55e;
+      transition: width 0.3s ease;
+    }
+
+    .team-member {
+      background: #f8fafc;
+      padding: 10px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      color: #475569;
+    }
+
+    .task {
+      margin-bottom: 15px;
+    }
+
+    .task-name {
+      font-weight: bold;
+      color: #1e293b;
+    }
+
+    .subtask {
+      margin-left: 20px;
+      padding: 6px 10px;
+      background: #f1f5f9;
+      border-left: 3px solid #3b82f6;
+      border-radius: 5px;
+      margin-top: 5px;
+      color: #374151;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Project: {{ project.name }}</h2>
+
+  <div class="detail-container">
+
+    <div class="info-box">
+      <p><strong>Summary:</strong> {{ project.summary or "N/A" }}</p>
+      <p><strong>Description:</strong> {{ project.description or "N/A" }}</p>
+      <p><strong>Deadline:</strong> {{ project.deadline or "Not Set" }}</p>
+    </div>
+
+    <div class="section-title">Progress</div>
+    <div class="progress-bar">
+      <div class="progress-fill" style="width: {{ progress_percentage }}%;"></div>
+    </div>
+    <p>{{ progress_percentage | round(2) }}% complete</p>
+
+    {% if team %}
+      <div class="section-title">Team: {{ team.name }}</div>
+      {% if members %}
+        {% for member in members %}
+          <div class="team-member">
+            👤 {{ member.user.profile.name or member.user.username }} — <em>{{ member.role.name.replace('_', ' ').title() }}</em>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p>No team members assigned.</p>
+      {% endif %}
+    {% else %}
+      <p>No team assigned to this project.</p>
+    {% endif %}
+
+    <div class="section-title">Tasks</div>
+    {% if tasks %}
+      {% for task in tasks %}
+        <div class="task">
+          <div class="task-name">{{ task.task_name }} — {{ task.completion_status.name.title() }}</div>
+          {% if task.subtasks %}
+            {% for subtask in task.subtasks %}
+              <div class="subtask">
+                🔹 {{ subtask.name }} — {{ subtask.status.name.title() }}
+              </div>
+            {% endfor %}
+          {% endif %}
+        </div>
+      {% endfor %}
+    {% else %}
+      <p>No tasks found for this project.</p>
+    {% endif %}
+  </div>
+
+</body>
+</html>

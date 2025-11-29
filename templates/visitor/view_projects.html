@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Approved Projects</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f5f9;
+      padding: 40px;
+    }
+
+    h2 {
+      color: #1e293b;
+      margin-bottom: 20px;
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+    }
+
+    .project-card {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s ease;
+    }
+
+    .project-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .project-card h3 {
+      color: #1e293b;
+      margin-bottom: 10px;
+      font-size: 20px;
+    }
+
+    .project-card p {
+      color: #475569;
+      margin-bottom: 12px;
+    }
+
+    .btn-view {
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 14px;
+      font-weight: 600;
+      background-color: #2563eb;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+    }
+
+    .btn-view:hover {
+      background-color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Approved Projects</h2>
+
+  {% if projects %}
+    <div class="project-grid">
+      {% for project in projects %}
+        <div class="project-card">
+          <h3>{{ project.name }}</h3>
+          <p>{{ project.summary or "No summary available." }}</p>
+          <a href="{{ url_for('visitor.view_project_detail', project_id=project.id) }}" class="btn-view">📄 View Details</a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p>No approved projects available for your teams.</p>
+  {% endif %}
+
+</body>
+</html>

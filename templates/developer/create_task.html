@@ -1,0 +1,126 @@
+{% extends 'dev_base.html' %}
+{% block title %}Create Task{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 py-8 px-4">
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800">Create New Task</h1>
+            </div>
+            <p class="text-gray-600">Add a new task to your project and stay organized</p>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="bg-white/70 rounded-2xl shadow-xl border border-gray-200 overflow-hidden backdrop-filter backdrop-blur-lg">
+            <div class="p-8">
+                <form method="POST" class="space-y-6">
+
+                    <!-- Task Name -->
+                    <div class="space-y-2">
+                        <label for="task_name" class="block text-sm font-semibold text-gray-700">
+                            Task Name <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="task_name" 
+                            name="task_name" 
+                            required
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                            placeholder="Enter a descriptive task name..."
+                        >
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="space-y-2">
+                        <label for="summary" class="block text-sm font-semibold text-gray-700">Summary</label>
+                        <input 
+                            type="text" 
+                            id="summary" 
+                            name="summary"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                            placeholder="Brief summary of the task..."
+                        >
+                    </div>
+
+                    <!-- Description -->
+                    <div class="space-y-2">
+                        <label for="description" class="block text-sm font-semibold text-gray-700">Description</label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            rows="4"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 placeholder-gray-400 resize-vertical"
+                            placeholder="Detailed description of the task..."></textarea>
+                    </div>
+
+                    <!-- Project Selection -->
+                    <div class="space-y-2">
+                        <label for="project" class="block text-sm font-semibold text-gray-700">
+                            Select Project <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <select 
+    id="project" 
+    name="project_id"   
+    required
+    class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 appearance-none bg-white cursor-pointer"
+>
+    <option value="">-- Select a project --</option>
+    {% for project in projects %}
+        <option value="{{ project.id }}">{{ project.name }}</option>
+    {% endfor %}
+</select>
+
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Due Date -->
+                    <div class="space-y-2">
+                        <label for="due_date" class="block text-sm font-semibold text-gray-700">Due Date</label>
+                        <input 
+                            type="date" 
+                            id="due_date" 
+                            name="due_date"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        >
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gray-200">
+                        <button 
+                            type="submit"
+                            class="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            Create Task
+                        </button>
+                        <a 
+                            href="{{ url_for('developer.developer_dashboard') }}"
+                            class="flex-1 sm:flex-none bg-white hover:bg-gray-100 text-gray-800 font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 border border-gray-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                        >
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                            </svg>
+                            Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

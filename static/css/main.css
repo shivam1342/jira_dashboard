@@ -1,0 +1,139 @@
+/* Reset & Base */
+* {
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f9fc;
+  color: #03045E;
+}
+
+/* Layout */
+.container {
+  display: flex;
+}
+
+.main-content {
+  margin-left: 240px;
+  width: 100%;
+}
+
+.content-area {
+  padding: 2rem;
+}
+
+/* Header */
+header {
+  background-color: #0077B6;
+  padding: 1rem;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Flash messages */
+.flash-messages {
+  list-style: none;
+  padding: 0.5rem;
+  margin: 1rem 0;
+  background-color: #ADE8F4;
+  border-left: 5px solid #0077B6;
+}
+
+/* Card UI */
+.card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+/* Buttons */
+button,
+.btn-primary {
+  background-color: #0077B6;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+button:hover,
+.btn-primary:hover {
+  background-color: #0096C7;
+}
+
+/* Form elements */
+input, select, textarea {
+  padding: 0.75rem;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-bottom: 1rem;
+  background-color: #fff;
+  color: #03045E;
+}
+
+/* Utility */
+.text-center {
+  text-align: center;
+}
+
+.mt-1 { margin-top: 1rem; }
+.mt-2 { margin-top: 2rem; }
+
+.main-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #0747A6; /* Jira-style blue */
+  color: white;
+  padding: 12px 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.main-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.search-bar {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.search-bar input {
+  width: 60%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px 0 0 4px;
+}
+
+.search-bar button {
+  padding: 8px 12px;
+  background-color: #0052CC;
+  color: white;
+  border: none;
+  border-radius: 0 4px 4px 0;
+  cursor: pointer;
+}
+
+.header-right {
+  width: 150px;
+  display: flex;
+  justify-content: flex-end;
+}

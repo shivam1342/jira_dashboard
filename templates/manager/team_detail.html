@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Team Members</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 text-slate-800 min-h-screen flex items-center justify-center py-10 px-4">
+  <div class="w-full max-w-5xl bg-white rounded-xl shadow-lg p-6 space-y-6 border border-slate-200">
+
+    <h2 class="text-3xl font-bold text-slate-900">Team Members</h2>
+
+    {% if members %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-slate-200 text-sm rounded-lg overflow-hidden">
+        <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+          <tr>
+            <th class="px-4 py-3 text-left">Username</th>
+            <th class="px-4 py-3 text-left">Role</th>
+          </tr>
+        </thead>
+        <tbody class="bg-white divide-y divide-slate-200">
+          {% for member in members %}
+          <tr>
+            <td class="px-4 py-2">
+              <a href="{{ url_for('manager.view_developer_detail', developer_id=member.user.id) }}"
+                 class="text-blue-600 hover:underline font-medium">
+                {{ member.user.username }}
+              </a>
+            </td>
+            <td class="px-4 py-2 capitalize">{{ member.role.name.replace('_', ' ') }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <div class="text-slate-500 text-center py-12">
+        No members found in your team.
+      </div>
+    {% endif %}
+
+    <div class="text-center">
+      <a href="{{ url_for('manager.manager_dashboard') }}"
+         class="inline-block mt-6 text-blue-600 hover:underline font-medium">← Back to Dashboard</a>
+    </div>
+
+  </div>
+</body>
+</html>

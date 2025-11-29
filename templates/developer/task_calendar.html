@@ -1,0 +1,130 @@
+{% extends 'dev_base.html' %}
+{% block title %}Task Calendar{% endblock %}
+
+{% block content %}
+<style>
+  .calendar-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 30px 20px;
+  }
+
+  .calendar-header {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #1f2937;
+    margin-bottom: 40px;
+    padding-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    border-bottom: 3px solid #3b82f6;
+  }
+
+  .task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .task-card {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-left: 6px solid #3b82f6;
+    padding: 20px 25px;
+    border-radius: 15px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+  }
+
+  .task-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.45);
+  }
+
+  .task-title a {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #1d4ed8;
+    text-decoration: none;
+  }
+
+  .task-title a:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+
+  .task-meta {
+    margin-top: 8px;
+    font-size: 0.95rem;
+    color: #475569;
+  }
+
+  .status-tag, .priority-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.85rem;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-left: 10px;
+  }
+
+  /* Status Colors */
+  .status-completed    { background: #dcfce7; color: #15803d; }
+  .status-in_progress  { background: #e0f2fe; color: #0369a1; }
+  .status-to_do        { background: #fef9c3; color: #92400e; }
+  .status-failed       { background: #fee2e2; color: #991b1b; }
+
+  /* Priority Colors */
+  .priority-low        { background: #e0f2fe; color: #0369a1; }
+  .priority-medium     { background: #fef3c7; color: #92400e; }
+  .priority-high       { background: #fee2e2; color: #b91c1c; }
+  .priority-critical   { background: #fca5a5; color: #7f1d1d; }
+
+  .no-tasks {
+    font-style: italic;
+    color: #9ca3af;
+    text-align: center;
+    margin-top: 30px;
+  }
+</style>
+
+<div class="bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen">
+<div class="calendar-container">
+  <div class="calendar-header">📅 Task Calendar – Upcoming Deadlines</div>
+
+  {% if tasks %}
+    <div class="task-list">
+      {% for task in tasks %}
+        <div class="task-card">
+          <div class="task-title">
+            <a href="{{ url_for('developer.task_details', task_id=task.id) }}">
+              {{ task.task_name }}
+            </a>
+          </div>
+          <div class="task-meta">
+            🕒 <strong>Due:</strong> {{ task.due_date.strftime('%b %d, %Y') }}
+
+            {% if task.completion_status %}
+              <span class="status-tag status-{{ task.completion_status.name }}">
+                {{ task.completion_status.value.title() }}
+              </span>
+            {% endif %}
+
+            {% if task.priority %}
+              <span class="priority-tag priority-{{ task.priority.name }}">
+                Priority: {{ task.priority.value.title() }}
+              </span>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="no-tasks">No tasks with due dates available.</div>
+  {% endif %}
+</div>
+</div>
+{% endblock %}

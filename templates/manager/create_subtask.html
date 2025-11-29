@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Create Subtask{% endblock %}
+
+{% block content %}
+<h2 class="page-title">➕ Create Subtask</h2>
+
+<form method="POST" action="{{ url_for('manager.create_subtask', project_id=project_id) }}" class="form-box">
+
+  <div class="form-group">
+    <label for="name">Subtask Name <span style="color: red;">*</span></label>
+    <input type="text" name="name" id="name" required placeholder="Enter subtask title">
+  </div>
+
+  <div class="form-group">
+    <label for="parent_task_id">Parent Task <span style="color: red;">*</span></label>
+    <select name="parent_task_id" id="parent_task_id" required>
+      <option value="" disabled selected>Select a parent task</option>
+      {% for task in parent_tasks %}
+        <option value="{{ task.id }}">{{ task.task_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="status">Status</label>
+    <select name="status" id="status">
+      {% for status in CompletionStatus %}
+        <option value="{{ status.name }}">{{ status.name.replace('_', ' ').title() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="type">Subtask Type</label>
+    <select name="type" id="type">
+      {% for t in SubtaskType %}
+        <option value="{{ t.name }}">{{ t.name.title() }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label for="due_date">Due Date</label>
+    <input type="date" name="due_date" id="due_date">
+  </div>
+
+  <button type="submit" class="btn btn-primary">Create Subtask</button>
+  <a href="{{ url_for('manager.view_project_details', project_id=project_id) }}" class="btn btn-secondary" style="margin-left: 10px;">← Cancel</a>
+</form>
+{% endblock %}

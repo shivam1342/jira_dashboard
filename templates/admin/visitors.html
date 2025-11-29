@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Handle Visitors</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6b7280;
+            --background-color: #f9fafb;
+            --sidebar-bg: #1f2937;
+            --sidebar-text: #d1d5db;
+            --sidebar-text-hover: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #111827;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --border-color: #e5e7eb;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            padding-top: 1.5rem;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--sidebar-text-hover);
+            border-bottom: 1px solid #374151;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1.5rem 0;
+            margin: 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: var(--primary-color);
+            color: var(--sidebar-text-hover);
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #374151;
+        }
+
+        .logout-button {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #dc2626;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .table-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--secondary-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .form-inline {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .form-inline select {
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+        }
+
+        .form-inline button {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: white;
+            transition: opacity 0.2s;
+        }
+
+        .form-inline button:hover { opacity: 0.9; }
+
+        .btn-approve { background-color: var(--success-color); }
+        .btn-suspend { background-color: var(--danger-color); }
+
+        .empty-state {
+            padding: 2rem;
+            text-align: center;
+            color: var(--secondary-color);
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">Admin Panel</div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('admin.create_user') }}">Create User</a></li>
+        <li><a href="{{ url_for('admin.view_users') }}">View Users</a></li>
+        <li><a href="{{ url_for('admin.create_team') }}">Create Team</a></li>
+        <li><a href="{{ url_for('admin.handle_visitors') }}" class="active">View Visitors</a></li>
+        <li><a href="{{ url_for('admin.reports') }}">Reports</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="logout-button">Logout</a>
+    </div>
+</div>
+
+<main class="main-content">
+    <header>
+        <h1>Pending Visitors</h1>
+    </header>
+
+    <div class="table-container">
+        {% if visitors %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Visitor Name</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Assign Project</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for visitor in visitors %}
+                <tr>
+                    <td>{{ visitor.profile.name if visitor.profile else "Unnamed" }}</td>
+                    <td>{{ visitor.username }}</td>
+                    <td>{{ visitor.email or '—' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.approve_visitor') }}" class="form-inline">
+                            <input type="hidden" name="visitor_id" value="{{ visitor.id }}">
+                            <select name="project_id" required>
+                                <option value="">-- Select Project --</option>
+                                {% for project in projects %}
+                                <option value="{{ project.id }}">{{ project.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn-approve">Approve & Assign</button>
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.suspend_visitor', visitor_id=visitor.id) }}" class="form-inline">
+                            <button type="submit" class="btn-suspend" onclick="return confirm('Are you sure you want to suspend this visitor?')">Suspend</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-state">No pending visitors at the moment.</p>
+        {% endif %}
+    </div>
+</main>
+
+</body>
+</html>

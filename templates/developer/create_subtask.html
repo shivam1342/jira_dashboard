@@ -1,0 +1,140 @@
+{% extends 'dev_base.html' %}
+{% block title %}Create Subtask{% endblock %}
+
+{% block content %}
+<style>
+  .form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .form-container h2 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #1f2937;
+    text-align: center;
+    border-bottom: 2px solid #3b82f6;
+    padding-bottom: 10px;
+  }
+
+  label {
+    display: block;
+    font-weight: 500;
+    margin-top: 15px;
+    color: #374151;
+  }
+
+  input[type="text"],
+  input[type="date"],
+  textarea,
+  select {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f9fafb;
+  }
+
+  input[type="text"]:focus,
+  input[type="date"]:focus,
+  textarea:focus,
+  select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: #ffffff;
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  .submit-btn {
+    margin-top: 25px;
+    width: 100%;
+    background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .submit-btn:hover {
+    background-color: #2563eb;
+  }
+
+  .back-link {
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    color: #3b82f6;
+    text-decoration: none;
+  }
+
+  .back-link:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<div class="bg-gradient-to-br from-gray-50 to-blue-100 min-h-screen py-8">
+<div class="form-container">
+  <h2>Create Subtask for "{{ project.name }}"</h2>
+
+  <form method="POST">
+    <label for="name">Subtask Name</label>
+    <input type="text" name="name" id="name" required>
+
+    <label for="summary">Summary</label>
+    <input type="text" name="summary" id="summary">
+
+    <label for="description">Description</label>
+    <textarea name="description" id="description"></textarea>
+
+    <label for="due_date">Due Date</label>
+    <input type="date" name="due_date" id="due_date">
+
+    <label for="parent_task_id">Parent Task</label>
+    <select name="parent_task_id" id="parent_task_id" required>
+      {% for task in tasks %}
+        <option value="{{ task.id }}">{{ task.task_name }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="status">Status</label>
+    <select name="status" id="status" required>
+      <option value="to_do">To Do</option>
+      <option value="in_progress">In Progress</option>
+      <option value="done">Done</option>
+    </select>
+
+    <label for="type">Type</label>
+    <select name="type" id="type" required>
+      <option value="feature">Feature</option>
+      <option value="bug">Bug</option>
+      <option value="update">update</option>
+      <option value="test">test</option>
+    </select>
+
+    <button type="submit" class="submit-btn">Create Subtask</button>
+  </form>
+
+  <a href="{{ url_for('developer.view_project_details', project_id=project.id) }}" class="back-link">← Back to Project Details</a>
+</div>
+</div>
+{% endblock %}

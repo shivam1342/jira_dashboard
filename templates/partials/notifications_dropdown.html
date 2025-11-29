@@ -1,0 +1,128 @@
+<div class="notifications-dropdown">
+    {% if notifications %}
+        {% for notification in notifications %}
+        <div class="notification-item {% if not notification.is_read %}unread{% endif %}" data-id="{{ notification.id }}">
+            <a href="{{ notification.action_url if notification.action_url else '#' }}" onclick="markAsRead({{ notification.id }})">
+                <div class="notification-content">
+                    <p>{{ notification.description }}</p>
+                    <small>{{ notification.created_at.strftime('%b %d, %H:%M') }}</small>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+        <div class="notification-footer">
+            <a href="{{ url_for('common.all_notifications') }}">View All</a>
+            <a href="#" onclick="markAllAsRead(); return false;">Mark All Read</a>
+        </div>
+    {% else %}
+        <div class="notification-empty">
+            <p>No new notifications</p>
+        </div>
+    {% endif %}
+</div>
+
+<style>
+.notifications-dropdown {
+    max-width: 350px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.notification-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.notification-item:hover {
+    background: #f5f5f5;
+}
+
+.notification-item.unread {
+    background: #e3f2fd;
+}
+
+.notification-item a {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.notification-content p {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.notification-content small {
+    color: #666;
+    font-size: 12px;
+}
+
+.notification-footer {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-top: 1px solid #ddd;
+    background: #f9f9f9;
+}
+
+.notification-footer a {
+    color: #1976d2;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.notification-footer a:hover {
+    text-decoration: underline;
+}
+
+.notification-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #999;
+}
+</style>
+
+<script>
+function markAsRead(notificationId) {
+    fetch(`/notifications/${notificationId}/read`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(() => {
+        updateNotificationCount();
+    });
+}
+
+function markAllAsRead() {
+    fetch('/notifications/read-all', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    }).then(() => {
+        location.reload();
+    });
+}
+
+function updateNotificationCount() {
+    fetch('/notifications/count')
+        .then(res => res.json())
+        .then(data => {
+            const badge = document.querySelector('.notification-badge');
+            if (badge) {
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline';
+                } else {
+                    badge.style.display = 'none';
+                }
+            }
+        });
+}
+</script>

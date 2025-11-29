@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Reports</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6b7280;
+            --background-color: #f9fafb;
+            --sidebar-bg: #1f2937;
+            --sidebar-text: #d1d5db;
+            --sidebar-text-hover: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #111827;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            padding-top: 1.5rem;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--sidebar-text-hover);
+            border-bottom: 1px solid #374151;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1.5rem 0;
+            margin: 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: var(--primary-color);
+            color: var(--sidebar-text-hover);
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #374151;
+        }
+
+        .logout-button {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #dc2626;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .report-section {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+            margin-bottom: 2rem;
+        }
+
+        .report-section h2 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--secondary-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        td.info {
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .status-active, .status-approved {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-deleted, .status-archived {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">Admin Panel</div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('admin.create_user') }}">Create User</a></li>
+        <li><a href="{{ url_for('admin.view_users') }}">View Users</a></li>
+        <li><a href="{{ url_for('admin.create_team') }}">Create Team</a></li>
+        <li><a href="{{ url_for('admin.handle_visitors') }}">View Visitors</a></li>
+        <li><a href="{{ url_for('admin.reports') }}" class="active">Reports</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="logout-button">Logout</a>
+    </div>
+</div>
+
+<main class="main-content">
+    <header>
+        <h1>System Reports</h1>
+    </header>
+
+    <div class="report-section">
+        <h2>Users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.role.name.capitalize() }}</td>
+                        <td>
+                            <span class="status-badge status-{{ 'active' if not user.is_deleted else 'deleted' }}">
+                                {{ 'Active' if not user.is_deleted else 'Deleted' }}
+                            </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-section">
+        <h2>Teams</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Team Name</th>
+                    <th>Manager</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for team in teams %}
+                    <tr>
+                        <td>{{ team.name }}</td>
+                        <td>
+                            {% set manager = users|selectattr('id', 'equalto', team.manager_id)|first %}
+                            {{ manager.username if manager else 'N/A' }}
+                        </td>
+                        <td class="info">{{ team.description or 'No description' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="report-section">
+        <h2>Projects</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Project Name</th>
+                    <th>Status</th>
+                    <th>Deadline</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                    <tr>
+                        <td>{{ project.name }}</td>
+                        <td>
+                            {% set status = 'completed' if project.is_completed else ('archived' if project.is_deleted else ('approved' if project.is_approved else 'pending')) %}
+                            <span class="status-badge status-{{ status }}">
+                                {{ status.capitalize() }}
+                            </span>
+                        </td>
+                        <td>{{ project.deadline.strftime('%Y-%m-%d') if project.deadline else 'Not Set' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+
+</body>
+</html>

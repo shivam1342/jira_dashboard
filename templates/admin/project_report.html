@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Report - {{ project.name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --secondary-color: #6b7280;
+            --background-color: #f9fafb;
+            --sidebar-bg: #1f2937;
+            --sidebar-text: #d1d5db;
+            --sidebar-text-hover: #ffffff;
+            --card-bg: #ffffff;
+            --text-color: #111827;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+            --border-color: #e5e7eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+        }
+
+        .sidebar {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            height: 100vh;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            padding-top: 1.5rem;
+        }
+
+        .sidebar-header {
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--sidebar-text-hover);
+            border-bottom: 1px solid #374151;
+        }
+
+        .sidebar-nav {
+            flex-grow: 1;
+            list-style: none;
+            padding: 1.5rem 0;
+            margin: 0;
+        }
+
+        .sidebar-nav a {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--sidebar-text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: var(--primary-color);
+            color: var(--sidebar-text-hover);
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #374151;
+        }
+
+        .logout-button {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .logout-button:hover {
+            background-color: #dc2626;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 2rem;
+        }
+
+        header {
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .report-section {
+            background-color: var(--card-bg);
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px var(--shadow-color), 0 2px 4px -2px var(--shadow-color);
+            margin-bottom: 2rem;
+        }
+
+        .report-section h3 {
+            margin-top: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .report-section p {
+            margin: 0.5rem 0;
+            color: var(--secondary-color);
+        }
+
+        .report-section strong {
+            color: var(--text-color);
+        }
+
+        .progress-bar {
+            background-color: var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            height: 20px;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: width 0.5s ease-in-out;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--secondary-color);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: capitalize;
+        }
+
+        .status-completed {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        .status-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .status-in-progress {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">Admin Panel</div>
+    <ul class="sidebar-nav">
+        <li><a href="{{ url_for('admin.admin_dashboard') }}">Dashboard</a></li>
+        <li><a href="{{ url_for('admin.create_user') }}">Create User</a></li>
+        <li><a href="{{ url_for('admin.view_users') }}">View Users</a></li>
+        <li><a href="{{ url_for('admin.create_team') }}">Create Team</a></li>
+        <li><a href="{{ url_for('admin.handle_visitors') }}">View Visitors</a></li>
+        <li><a href="{{ url_for('admin.reports') }}" class="active">Reports</a></li>
+    </ul>
+    <div class="sidebar-footer">
+        <a href="{{ url_for('auth.logout') }}" class="logout-button">Logout</a>
+    </div>
+</div>
+
+<main class="main-content">
+    <header>
+        <h1>Project Report: {{ project.name }}</h1>
+    </header>
+
+    <div class="report-section">
+        <h3>Project Overview</h3>
+        <p><strong>Owner Team:</strong> {{ owner_team.name if owner_team else 'N/A' }}</p>
+        <p><strong>Assigned Teams:</strong>
+            {% if assigned_teams %}
+                {{ assigned_teams | map(attribute='name') | join(', ') }}
+            {% else %}
+                No teams assigned.
+            {% endif %}
+        </p>
+        <p><strong>Total Tasks:</strong> {{ total_tasks }}</p>
+        <p><strong>Completed Tasks:</strong> {{ completed_tasks }}</p>
+        <p><strong>Progress:</strong></p>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width: {{ progress }}%;">{{ progress|round|int }}%</div>
+        </div>
+    </div>
+
+    <div class="report-section">
+        <h3>Tasks</h3>
+        {% if task_info %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Task Name</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for task in task_info %}
+                <tr>
+                    <td>{{ task.name }}</td>
+                    <td>
+                        <span class="status-badge status-{{ task.status.replace('_', '-') }}">
+                            {{ task.status.replace('_', ' ') }}
+                        </span>
+                    </td>
+                    <td>{{ task.assigned_to }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p>No tasks available for this project.</p>
+        {% endif %}
+        <a href="{{ url_for('admin.reports') }}" class="back-link">Back to Reports</a>
+    </div>
+</main>
+
+</body>
+</html>
