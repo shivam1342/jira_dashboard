@@ -52,6 +52,7 @@
 <h2 class="page-title">Assign Team Lead</h2>
 
 <form method="POST" action="{{ url_for('manager.assign_team_lead', team_id=team.id) }}" class="form-box">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   <div class="form-group">
     <label for="lead_user_id">Select Lead:</label>
     <select name="lead_user_id" required>

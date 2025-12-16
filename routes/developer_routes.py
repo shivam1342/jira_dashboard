@@ -3,18 +3,22 @@ from controllers import developer_controller
 
 developer_bp = Blueprint('developer', __name__, url_prefix='/developer')
 
+# Dashboard
 developer_bp.route('/', methods=['GET'])(developer_controller.developer_dashboard)
 
+# Projects - RESTful routes
 developer_bp.route('/projects/<int:project_id>', methods=['GET'])(developer_controller.view_project_details)
 
-developer_bp.route('/tasks/create', methods=['GET', 'POST'])(developer_controller.create_task)
+# Tasks - RESTful routes
+developer_bp.route('/tasks/new', methods=['GET'])(developer_controller.create_task)  # Show create form
+developer_bp.route('/tasks', methods=['POST'])(developer_controller.create_task)  # Create
+developer_bp.route('/tasks/<int:task_id>', methods=['GET'])(developer_controller.view_task_details)  # Show
+developer_bp.route('/tasks/<int:task_id>/status', methods=['POST', 'PUT'])(developer_controller.update_task_status)  # Update status
+developer_bp.route('/api/tasks/<int:task_id>/status', methods=['POST'])(developer_controller.update_task_status_api)  # API endpoint
 
-developer_bp.route('/tasks/<int:task_id>', methods=['GET'])(developer_controller.view_task_details)
+# Subtasks - RESTful routes
+developer_bp.route('/projects/<int:project_id>/subtasks/new', methods=['GET'])(developer_controller.create_subtask)  # Show create form
+developer_bp.route('/projects/<int:project_id>/subtasks', methods=['POST'])(developer_controller.create_subtask)  # Create
 
-developer_bp.route('/projects/<int:project_id>/create_subtask', methods=['GET', 'POST'])(developer_controller.create_subtask)
-
-developer_bp.route('/tasks/update/<int:task_id>', methods=['GET', 'POST'])(developer_controller.update_task_status)
-
-developer_bp.route('/api/tasks/<int:task_id>/status', methods=['POST'])(developer_controller.update_task_status_api)
-
-developer_bp.route('/logout')(developer_controller.logout)
+# Logout
+developer_bp.route('/logout', methods=['GET'])(developer_controller.logout)

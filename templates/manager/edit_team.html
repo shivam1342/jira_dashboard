@@ -6,6 +6,7 @@
 
 <div class="card">
   <form method="POST" action="{{ url_for('manager.edit_team', team_id=team.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="form-group">
       <label for="name">Team Name</label>
       <input type="text" name="name" value="{{ team.name }}" required>

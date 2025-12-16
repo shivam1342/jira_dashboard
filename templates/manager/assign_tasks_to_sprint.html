@@ -5,6 +5,7 @@
 <h2>Assign Tasks to Sprint: {{ sprint.name }}</h2>
 
 <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   <div>
     <label>Select Tasks:</label><br>
     {% for task in unassigned_tasks %}

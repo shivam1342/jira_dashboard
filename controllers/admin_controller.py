@@ -7,6 +7,7 @@ from models.project import Project
 from models.team_member import TeamMember, TeamRole
 from .decorators import admin_required
 from flask_mailman import EmailMessage
+import bcrypt
 
 @admin_required
 def create_team():
@@ -47,7 +48,7 @@ def create_team():
 def edit_team(team_id):
     team = Team.query.get_or_404(team_id)
 
-    if request.method == 'POST':
+    if request.method in ['POST', 'PUT']:
         team.name = request.form['name']
         team.description = request.form.get('description')
         new_manager_id = request.form.get('manager_id')
@@ -131,8 +132,9 @@ def approve_user(user_id):
 @admin_required
 def edit_user(user_id):
     user = LoginInfo.query.get_or_404(user_id)
+    print(f"DEBUG: edit_user called with method: {request.method}")
 
-    if request.method == 'POST':
+    if request.method in ['POST', 'PUT']:
         user.username = request.form['username']
         user.role = UserRole(request.form['role'])
         db.session.commit()
@@ -154,7 +156,9 @@ def reset_password(user_id):
     if request.method == 'POST':
         new_password = request.form['password']
         user = LoginInfo.query.get_or_404(user_id)
-        user.password = new_password
+        # Hash the new password
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        user.password = hashed_password
         db.session.commit()
         flash("Password reset successfully.")
         return redirect(url_for('admin.view_users'))
@@ -281,9 +285,12 @@ def create_user():
         team_id = request.form.get('team_id')
 
         try:
+            # Hash the password
+            hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            
             new_user = LoginInfo(
                 username=username,
-                password=password,
+                password=hashed_password,
                 role=UserRole(role),
                 is_approved=True,
                 is_deleted=False
@@ -292,7 +299,7 @@ def create_user():
             db.session.flush()
 
             profile = UserProfile(
-                user_id=new_user.id,
+                login_info_id=new_user.id,
                 name=name,
                 gmail=gmail,
                 phone=phone

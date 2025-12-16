@@ -96,7 +96,8 @@
 <div class="form-container">
   <h2>Create Subtask for "{{ project.name }}"</h2>
 
-  <form method="POST">
+  <form method="POST" action="{{ url_for('developer.create_subtask', project_id=project.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <label for="name">Subtask Name</label>
     <input type="text" name="name" id="name" required>
 

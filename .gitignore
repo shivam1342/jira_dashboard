@@ -3,4 +3,23 @@ __pycache__/
 *.pyc
 instance/
 .env
+
+# Testing
+test_app.py
+pytest.ini
+.pytest_cache/
+.env.test
+run_tests.py
+TEST_FAILURES_ANALYSIS.md
+
+# study
+ROUTING.md
+SECURITY.md
+QUESTIONNAIRE.md
+to do.txt
+
+#automate
+update_forms_restful.py
+add_csrf_tokens.py
+migrate_passwords.py
 #zip -r project.zip MVP_Project -x "venv/*" -x "__pycache__/*" -x "*.pyc" -x "*.pyo" -x "*.db" -x "*.log"

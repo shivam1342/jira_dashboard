@@ -76,7 +76,7 @@ def edit_project(project_id):
         flash('You are not authorized to edit this project.')
         return redirect(url_for('manager.manager_dashboard'))
 
-    if request.method == 'POST':
+    if request.method in ['POST', 'PUT']:
         project.name = request.form.get('name')
         project.summary = request.form.get('summary')
         project.description = request.form.get('description')
@@ -341,7 +341,7 @@ def edit_task(task_id):
     task = Task.query.get_or_404(task_id)
     users = LoginInfo.query.join(TeamMember).filter(TeamMember.role == TeamRole.developer).all()
 
-    if request.method == 'POST':
+    if request.method in ['POST', 'PUT']:
         task.task_name = request.form.get('name')
         task.summary = request.form.get('summary')
         task.description = request.form.get('description')

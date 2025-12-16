@@ -73,6 +73,7 @@
         <!-- Add Note Form (Hidden by default) -->
         <div id="note-form" style="display: none;" class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <form method="POST" action="{{ url_for('common.create_note', task_id=task.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <div class="mb-3">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
                     <select name="note_type" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
@@ -121,11 +122,13 @@
                         {% if note.created_by == session.get('user_id') %}
                         <button onclick="editNote({{ note.id }}, '{{ note.content }}')" class="text-blue-600 hover:text-blue-800 text-sm">Edit</button>
                         <form method="POST" action="{{ url_for('common.delete_note', note_id=note.id) }}" style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" onclick="return confirm('Delete this note?')" class="text-red-600 hover:text-red-800 text-sm">Delete</button>
                         </form>
                         {% endif %}
                         {% if note.note_type.value in ['query', 'issue'] and not note.is_resolved and task.manager_id == session.get('user_id') %}
                         <form method="POST" action="{{ url_for('common.resolve_note', note_id=note.id) }}" style="display: inline;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="text-green-600 hover:text-green-800 text-sm">Mark Resolved</button>
                         </form>
                         {% endif %}
@@ -135,6 +138,7 @@
                     <!-- Reply Form -->
                     <div id="reply-form-{{ note.id }}" style="display: none;" class="mt-3 p-3 bg-white border border-gray-200 rounded">
                         <form method="POST" action="{{ url_for('common.create_note', task_id=task.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="parent_note_id" value="{{ note.id }}">
                             <input type="hidden" name="note_type" value="comment">
                             <textarea name="content" required rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg mb-2" placeholder="Write a reply..."></textarea>

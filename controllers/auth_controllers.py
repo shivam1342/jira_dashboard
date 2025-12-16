@@ -6,6 +6,7 @@ from models.team import Team
 from models import db
 from flask_mailman import EmailMessage
 import random
+import bcrypt
 
 
 def signup_page():
@@ -32,7 +33,10 @@ def signup():
 
     role = UserRole.developer if team_id else UserRole.visitor
 
-    login_info = LoginInfo(username=username, password=password, role=role)
+    # Hash the password
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    login_info = LoginInfo(username=username, password=hashed_password, role=role)
     db.session.add(login_info)
     db.session.commit()
 
@@ -68,9 +72,14 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        user = LoginInfo.query.filter_by(username=username, password=password, is_deleted=False).first()
+        user = LoginInfo.query.filter_by(username=username, is_deleted=False).first()
 
         if not user:
+            flash("Invalid credentials.", "error")
+            return redirect(url_for('auth.login_page'))
+
+        # Verify password using bcrypt
+        if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
             flash("Invalid credentials.", "error")
             return redirect(url_for('auth.login_page'))
 
@@ -82,7 +91,7 @@ def login():
         session['username'] = user.username
         session['role'] = user.role.value
         
-        print("Logged in user ID:", user.id)
+        # print("Logged in user ID:", user.id)
 
 
         if user.role in [UserRole.developer, UserRole.manager]:
@@ -163,8 +172,9 @@ def verify_otp():
             flash('User not found.', 'error')
             return redirect(url_for('auth.forgot_password'))
 
-        # Update password (note: current system stores plain passwords)
-        user.password = new_password
+        # Hash the new password
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        user.password = hashed_password
         db.session.commit()
 
         # clear reset session keys

@@ -75,6 +75,7 @@
 <h2 class="page-title">➕ Create New Project</h2>
 
 <form method="POST" action="{{ url_for('manager.create_project') }}" class="form-box">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   <div class="form-group">
     <label for="name">Project Name</label>
     <input type="text" name="name" id="name" required placeholder="Enter project name">

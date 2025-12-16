@@ -77,6 +77,7 @@
 <h2 class="page-title">📝 Assign New Task</h2>
 
 <form method="POST" action="{{ url_for('manager.assign_task') }}" class="form-box">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   <div class="form-group">
     <label for="task_name">Task Name</label>
     <input type="text" name="task_name" id="task_name" required value="{{ request.form.task_name or '' }}">

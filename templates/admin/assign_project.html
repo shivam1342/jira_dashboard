@@ -192,6 +192,7 @@
 
     <div class="content-wrapper">
         <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="project">Select Project</label>
                 <select name="project_id" id="project" required>

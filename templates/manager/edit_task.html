@@ -352,7 +352,9 @@
       </div>
     </div>
 
-    <form method="POST" action="{{ url_for('manager.edit_task', task_id=task.id) }}" id="editTaskForm">
+    <form method="POST" action="{{ url_for('manager.edit_task', task_id=task.id) }}">
+    <input type="hidden" name="_method" value="PUT" id="editTaskForm">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <div class="form-grid">
         <div class="form-group">
           <label for="task_name">Task Name *</label>

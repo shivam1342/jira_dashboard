@@ -11,11 +11,14 @@ from controllers.auth_controllers import (
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
-auth_bp.route('/signup', methods=['GET'])(signup_page)
-auth_bp.route('/signup', methods=['POST'])(signup)
+# Authentication - RESTful routes
+auth_bp.route('/signup', methods=['GET'])(signup_page)  # Show signup form
+auth_bp.route('/signup', methods=['POST'])(signup)  # Create account
 
-auth_bp.route('/login', methods=['GET'])(login_page)
-auth_bp.route('/login', methods=['POST'])(login)
-auth_bp.add_url_rule('/forgot-password', view_func=forgot_password, methods=['GET', 'POST'])
-auth_bp.add_url_rule('/forgot-password/verify', view_func=verify_otp, methods=['GET', 'POST'], endpoint='verify_otp')
-auth_bp.add_url_rule('/logout', view_func=logout, endpoint='logout')
+auth_bp.route('/login', methods=['GET'])(login_page)  # Show login form
+auth_bp.route('/login', methods=['POST'])(login)  # Authenticate
+
+auth_bp.route('/password/forgot', methods=['GET', 'POST'])(forgot_password)  # Forgot password
+auth_bp.route('/password/verify', methods=['GET', 'POST'])(verify_otp)  # Verify OTP
+
+auth_bp.route('/logout', methods=['GET'])(logout)  # Logout

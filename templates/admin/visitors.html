@@ -217,6 +217,7 @@
                     <td>{{ visitor.email or '—' }}</td>
                     <td>
                         <form method="POST" action="{{ url_for('admin.approve_visitor') }}" class="form-inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <input type="hidden" name="visitor_id" value="{{ visitor.id }}">
                             <select name="project_id" required>
                                 <option value="">-- Select Project --</option>
@@ -228,7 +229,9 @@
                         </form>
                     </td>
                     <td>
-                        <form method="POST" action="{{ url_for('admin.suspend_visitor', visitor_id=visitor.id) }}" class="form-inline">
+                        <form method="POST" action="{{ url_for('admin.suspend_visitor', visitor_id=visitor.id) }}">
+    <input type="hidden" name="_method" value="PATCH" class="form-inline">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                             <button type="submit" class="btn-suspend" onclick="return confirm('Are you sure you want to suspend this visitor?')">Suspend</button>
                         </form>
                     </td>

@@ -102,6 +102,7 @@
     <h2>Submit Report for: {{ task.task_name }}</h2>
 
     <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <label for="report">Your Report:</label>
       <textarea name="content" id="report" rows="6" required></textarea>
       

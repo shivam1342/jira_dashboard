@@ -108,6 +108,7 @@
     <h2>Raise a Query</h2>
 
     <form method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
       <label for="query">Your Message / Query:</label>
       <textarea name="content" id="query" rows="5" required></textarea>
       <button type="submit">Send</button>

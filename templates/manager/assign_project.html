@@ -68,6 +68,7 @@
 <h2 class="page-title">🧩 Assign Project to Team</h2>
 
 <form method="POST" action="{{ url_for('manager.assign_project_to_team') }}" class="form-box">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   <div class="form-group">
     <label for="team_id">Select Team</label>
     <select name="team_id" id="team_id" required>

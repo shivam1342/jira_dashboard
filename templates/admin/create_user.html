@@ -181,7 +181,8 @@
     </header>
 
     <div class="content-wrapper">
-        <form method="POST">
+        <form method="POST" action="/admin/users">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <div class="form-group">
                 <label for="username">Username</label>
                 <input type="text" id="username" name="username" required>
