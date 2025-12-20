@@ -12,6 +12,9 @@
             <span><strong>Due Date:</strong> {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'Not set' }}</span>
             <span><strong>Assigned To:</strong> {{ task.assignee.username if task.assignee else 'Unassigned' }}</span>
             <span><strong>Created At:</strong> {{ task.created_at.strftime('%Y-%m-%d') }}</span>
+            {% if task.sprint %}
+            <span><strong>Sprint:</strong> 🏃 {{ task.sprint.name }} ({{ task.sprint.start_date.strftime('%Y-%m-%d') }} - {{ task.sprint.end_date.strftime('%Y-%m-%d') }})</span>
+            {% endif %}
         </div>
     </div>
 

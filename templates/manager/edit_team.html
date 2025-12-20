@@ -1,23 +1,139 @@
 {% extends 'base.html' %}
-{% block title %}Edit Team{% endblock %}
+{% block title %}Edit Team Members{% endblock %}
 
 {% block content %}
-<h2 class="page-title">Edit Team</h2>
+<style>
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #1e293b;
+    border-left: 4px solid #2563eb;
+    padding-left: 12px;
+  }
 
-<div class="card">
-  <form method="POST" action="{{ url_for('manager.edit_team', team_id=team.id) }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-    <div class="form-group">
-      <label for="name">Team Name</label>
-      <input type="text" name="name" value="{{ team.name }}" required>
+  .form-box {
+    max-width: 800px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+  }
+
+  .member-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+  }
+
+  .member-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .member-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .member-item label {
+    margin: 0;
+    font-weight: 400;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  .manager-badge {
+    background: #fbbf24;
+    color: #78350f;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: #1d4ed8;
+  }
+</style>
+
+<h2 class="page-title">👥 Edit Team Members: {{ team.name }}</h2>
+
+<form method="POST" action="{{ url_for('manager.edit_team') }}" class="form-box">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  
+  <div class="form-group">
+    <label>Team Members (Select developers to add/remove)</label>
+    <div class="member-list">
+      {% for dev in all_developers %}
+        <div class="member-item">
+          <input 
+            type="checkbox" 
+            id="member_{{ dev.id }}" 
+            name="member_ids" 
+            value="{{ dev.id }}"
+            {% if members | selectattr('user_id', 'equalto', dev.id) | list | length > 0 %}checked{% endif %}
+            {% if dev.id == team.manager_id %}disabled{% endif %}
+          >
+          <label for="member_{{ dev.id }}">
+            {{ dev.username }}
+            {% if dev.id == team.manager_id %}
+              <span class="manager-badge">MANAGER</span>
+            {% endif %}
+          </label>
+        </div>
+      {% endfor %}
     </div>
+    <p style="color: #64748b; font-size: 0.9rem; margin-top: 8px;">
+      Manager cannot be removed from the team
+    </p>
+  </div>
 
-    <div class="form-group">
-      <label for="description">Description (optional)</label>
-      <textarea name="description" rows="4">{{ team.description or '' }}</textarea>
-    </div>
+  <div class="form-group">
+    <button type="submit" class="btn-primary">Update Team Members</button>
+  </div>
+</form>
 
-    <button type="submit" class="btn-primary">Update Team</button>
-  </form>
+<div style="max-width: 800px; margin-top: 15px;">
+  <a href="{{ url_for('manager.team_details') }}" class="text-blue-600 hover:underline">
+    ← Back to Team Details
+  </a>
 </div>
+
 {% endblock %}

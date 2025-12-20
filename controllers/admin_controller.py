@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, render_template, flash, session
+from flask import request, redirect, url_for, render_template, flash, session, current_app
 from models import db
 from models.team import Team
 from models.login_info import LoginInfo, UserRole
@@ -8,33 +8,64 @@ from models.team_member import TeamMember, TeamRole
 from .decorators import admin_required
 from flask_mailman import EmailMessage
 import bcrypt
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 @admin_required
 def create_team():
     if request.method == 'POST':
-        name = request.form['name']
-        description = request.form.get('description')
-        manager_id = request.form.get('manager_id')
+        try:
+            name = request.form.get('name', '').strip()
+            description = request.form.get('description', '').strip()
+            manager_id = request.form.get('manager_id')
 
-        team = Team(name=name, description=description)
+            # Validation
+            if not name:
+                flash('Team name is required', 'error')
+                return redirect(url_for('admin.show_create_team_form'))
 
-        if manager_id:
-            team.manager_id = int(manager_id)
+            # Check for duplicate team name
+            existing_team = Team.query.filter_by(name=name, is_deleted=False).first()
+            if existing_team:
+                flash(f'Team "{name}" already exists', 'error')
+                current_app.logger.warning(f'Attempt to create duplicate team: {name}')
+                return redirect(url_for('admin.show_create_team_form'))
 
-        db.session.add(team)
-        db.session.commit()
+            team = Team(name=name, description=description)
 
-        if manager_id:
-            manager_id = int(manager_id)
-            existing_member = TeamMember.query.filter_by(user_id=manager_id, team_id=team.id).first()
-            if existing_member:
-                existing_member.role = TeamRole.manager
-            else:
-                db.session.add(TeamMember(user_id=manager_id, team_id=team.id, role=TeamRole.manager))
+            if manager_id:
+                team.manager_id = int(manager_id)
+
+            db.session.add(team)
             db.session.commit()
 
-        flash('Team created successfully!')
-        return redirect(url_for('admin.admin_dashboard'))
+            if manager_id:
+                manager_id = int(manager_id)
+                existing_member = TeamMember.query.filter_by(user_id=manager_id, team_id=team.id).first()
+                if existing_member:
+                    existing_member.role = TeamRole.manager
+                else:
+                    db.session.add(TeamMember(user_id=manager_id, team_id=team.id, role=TeamRole.manager))
+                db.session.commit()
+
+            current_app.logger.info(f'Team created: {name} (ID: {team.id}) by admin user {session.get("username")}')
+            flash('Team created successfully!', 'success')
+            return redirect(url_for('admin.admin_dashboard'))
+
+        except IntegrityError as e:
+            db.session.rollback()
+            current_app.logger.error(f'Database integrity error creating team: {str(e)}')
+            flash('Error creating team: Duplicate name or invalid data', 'error')
+            return redirect(url_for('admin.show_create_team_form'))
+        except ValueError as e:
+            db.session.rollback()
+            current_app.logger.error(f'ValueError creating team: {str(e)}')
+            flash('Invalid manager selection', 'error')
+            return redirect(url_for('admin.show_create_team_form'))
+        except Exception as e:
+            db.session.rollback()
+            current_app.logger.error(f'Unexpected error creating team: {str(e)}', exc_info=True)
+            flash('An unexpected error occurred. Please try again.', 'error')
+            return redirect(url_for('admin.show_create_team_form'))
 
     potential_managers = LoginInfo.query \
         .filter(LoginInfo.is_deleted == False) \
@@ -90,11 +121,20 @@ def edit_team(team_id):
 
 @admin_required
 def delete_team(team_id):
-    team = Team.query.get_or_404(team_id)
-    team.is_deleted = True
-    db.session.commit()
-    flash('Team archived successfully!')
-    return redirect(url_for('admin.admin_dashboard'))
+    try:
+        team = Team.query.get_or_404(team_id)
+        team.is_deleted = True
+        db.session.commit()
+        
+        current_app.logger.info(f'Team archived: {team.name} (ID: {team_id}) by admin user {session.get("username")}')
+        flash('Team archived successfully!', 'success')
+        return redirect(url_for('admin.admin_dashboard'))
+    
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Error archiving team {team_id}: {str(e)}', exc_info=True)
+        flash('Error archiving team. Please try again.', 'error')
+        return redirect(url_for('admin.admin_dashboard'))
 
 @admin_required
 def view_team(team_id):
@@ -118,16 +158,31 @@ def view_users():
 
 @admin_required
 def approve_user(user_id):
-    user = LoginInfo.query.get_or_404(user_id)
-    user.is_approved = True
-    db.session.commit()
+    try:
+        user = LoginInfo.query.get_or_404(user_id)
+        user.is_approved = True
+        db.session.commit()
 
-    subject = "You are approved by admin"
-    message = f"Hello {user.username},\n\nYour Account has been approved by the admin."
-    email = EmailMessage(subject, message, to=[user.profile.gmail])
-    email.send()
-    flash("User approved successfully.")
-    return redirect(url_for('admin.view_users'))
+        # Send approval email
+        try:
+            subject = "You are approved by admin"
+            message = f"Hello {user.username},\n\nYour Account has been approved by the admin."
+            email = EmailMessage(subject, message, to=[user.profile.gmail])
+            email.send()
+            current_app.logger.info(f'Approval email sent to {user.profile.gmail}')
+        except Exception as email_error:
+            current_app.logger.warning(f'Failed to send approval email to {user.profile.gmail}: {str(email_error)}')
+            # Don't fail the whole operation if email fails
+        
+        current_app.logger.info(f'User approved: {user.username} (ID: {user_id}) by admin {session.get("username")}')
+        flash("User approved successfully.", 'success')
+        return redirect(url_for('admin.view_users'))
+    
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Error approving user {user_id}: {str(e)}', exc_info=True)
+        flash('Error approving user. Please try again.', 'error')
+        return redirect(url_for('admin.view_users'))
 
 @admin_required
 def edit_user(user_id):
@@ -145,9 +200,21 @@ def edit_user(user_id):
 
 @admin_required
 def delete_user(user_id):
-    user = LoginInfo.query.get_or_404(user_id)
-    user.is_deleted = True
-    db.session.commit()
+    try:
+        user = LoginInfo.query.get_or_404(user_id)
+        username = user.username
+        user.is_deleted = True
+        db.session.commit()
+        
+        current_app.logger.info(f'User deleted: {username} (ID: {user_id}) by admin {session.get("username")}')
+        flash('User deleted successfully!', 'success')
+        return redirect(url_for('admin.view_users'))
+    
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Error deleting user {user_id}: {str(e)}', exc_info=True)
+        flash('Error deleting user. Please try again.', 'error')
+        return redirect(url_for('admin.view_users'))
     flash('User soft-deleted.')
     return redirect(url_for('admin.view_users'))
 

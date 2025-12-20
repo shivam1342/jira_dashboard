@@ -266,10 +266,16 @@
   <div class="card">
     <h3>Total Sprints</h3>
     <span class="stat-number">{{ sprints | length }}</span>
-    <p>Running and completed sprints</p>
-    <a href="#" class="btn-primary">+ Create Sprint</a>
+    <p>Across all projects</p>
+    {% if sprints %}
+      <p style="color: #667eea; font-size: 0.85rem; margin-top: 8px;">
+        Active: {{ sprints | selectattr('status.name', 'equalto', 'active') | list | length }}
+      </p>
+    {% endif %}
   </div>
 </div>
+
+
 
 <!-- Active Projects -->
 <section>
@@ -299,9 +305,18 @@
     <div class="grid-list">
       {% for sprint in sprints %}
         <div class="card">
-          <h4>{{ sprint.name }}</h4>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h4 style="margin: 0;">{{ sprint.name }}</h4>
+            {% if sprint.status.name == 'completed' or sprint.status.name == 'archived' %}
+              <span style="background: rgba(226, 232, 240, 0.3); color: rgba(255,255,255,0.7); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">✓ {{ sprint.status.value }}</span>
+            {% elif sprint.status.name == 'planning' %}
+              <span style="background: rgba(254, 243, 199, 0.2); color: rgba(251, 191, 36, 1); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">📋 {{ sprint.status.value }}</span>
+            {% elif sprint.status.name == 'active' %}
+              <span style="background: rgba(209, 250, 229, 0.2); color: rgba(16, 185, 129, 1); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; white-space: nowrap;">● {{ sprint.status.value }}</span>
+            {% endif %}
+          </div>
           <p class="sprint-info">{{ sprint.start_date }} → {{ sprint.end_date }}</p>
-          <a href="{{ url_for('manager.view_sprint', sprint_id=sprint.id) }}" class="btn-secondary">View Sprint</a>
+          <a href="{{ url_for('manager.view_sprint_detail', sprint_id=sprint.id) }}" class="btn-secondary" style="margin-top: 8px;">View Sprint</a>
         </div>
       {% endfor %}
     </div>

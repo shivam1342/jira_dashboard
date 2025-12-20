@@ -2,24 +2,143 @@
 {% block title %}Assign Tasks to Sprint{% endblock %}
 
 {% block content %}
-<h2>Assign Tasks to Sprint: {{ sprint.name }}</h2>
+<style>
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #1e293b;
+    border-left: 4px solid #2563eb;
+    padding-left: 12px;
+  }
 
-<form method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-  <div>
-    <label>Select Tasks:</label><br>
-    {% for task in unassigned_tasks %}
-      <input type="checkbox" name="task_ids" value="{{ task.id }}">
-      {{ task.task_name }}<br>
-    {% else %}
-      <p>No unassigned tasks available.</p>
-    {% endfor %}
+  .form-box {
+    max-width: 800px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+  }
+
+  select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #f9fafb;
+    color: #1e293b;
+  }
+
+  .task-list {
+    display: grid;
+    gap: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    background: #f9fafb;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+  }
+
+  .task-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: #1d4ed8;
+  }
+</style>
+
+<h2 class="page-title">📋 Assign Tasks to Sprint - {{ project.name }}</h2>
+
+<form method="POST" action="{{ url_for('manager.assign_tasks_to_sprint', project_id=project.id) }}" class="form-box">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  
+  <div class="form-group">
+    <label for="sprint_id">Select Sprint *</label>
+    <select id="sprint_id" name="sprint_id" required>
+      <option value="">-- Choose a Sprint --</option>
+      {% for sprint in sprints %}
+        <option value="{{ sprint.id }}">{{ sprint.name }} ({{ sprint.start_date }} to {{ sprint.end_date }})</option>
+      {% endfor %}
+    </select>
+    {% if not sprints %}
+      <p style="color: #dc2626; margin-top: 8px;">No sprints available. Create a sprint first.</p>
+    {% endif %}
   </div>
 
-  {% if unassigned_tasks %}
-    <button type="submit">Assign Selected Tasks</button>
+  <div class="form-group">
+    <label>Select Tasks to Assign:</label>
+    <p style="color: #d97706; font-size: 0.9rem; margin-bottom: 10px;">
+      ⚠️ Note: Tasks already in a sprint will be <strong>moved</strong> to the newly selected sprint.
+    </p>
+    <div class="task-list">
+      {% for task in tasks %}
+        <div class="task-item">
+          <input type="checkbox" id="task_{{ task.id }}" name="task_ids" value="{{ task.id }}">
+          <label for="task_{{ task.id }}" style="margin: 0; font-weight: 400; cursor: pointer;">
+            {{ task.task_name }}
+            {% if task.sprint_id %}
+              <span style="color: #dc2626; font-size: 0.9rem; font-weight: 500;">
+                (Currently in: {{ task.sprint.name }})
+              </span>
+            {% endif %}
+          </label>
+        </div>
+      {% else %}
+        <p style="color: #64748b;">No tasks available in this project.</p>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if sprints and tasks %}
+    <div class="form-group">
+      <button type="submit" class="btn-primary">Assign Selected Tasks</button>
+    </div>
   {% endif %}
 </form>
 
-<a href="{{ url_for('manager.view_sprint', sprint_id=sprint.id) }}">← Back to Sprint</a>
+<div style="max-width: 800px; margin-top: 15px;">
+  <a href="{{ url_for('manager.view_project_details', project_id=project.id) }}" class="text-blue-600 hover:underline">
+    ← Back to Project
+  </a>
+</div>
+
 {% endblock %}

@@ -4,6 +4,10 @@ __pycache__/
 instance/
 .env
 
+# Logs
+logs/
+*.log
+
 # Testing
 test_app.py
 pytest.ini
@@ -11,13 +15,19 @@ pytest.ini
 .env.test
 run_tests.py
 TEST_FAILURES_ANALYSIS.md
+htmlcov/
+.coverage
+*.coverage
 
 # study
 ROUTING.md
 SECURITY.md
 QUESTIONNAIRE.md
 to do.txt
-
+STUDY.md
+ERROR_HANDLING_AND_LOGGING.md
+DATABASE_BACKUP_GUIDE.md
+MIGRATION_SETUP.md
 #automate
 update_forms_restful.py
 add_csrf_tokens.py

@@ -317,6 +317,13 @@
                             <strong>Due Date:</strong><br>
                             {{ task.due_date.strftime('%Y-%m-%d') if task.due_date else 'Not set' }}
                         </div>
+                        {% if task.sprint %}
+                        <div class="info-item">
+                            <i class="fas fa-running me-2"></i>
+                            <strong>Sprint:</strong><br>
+                            {{ task.sprint.name }} ({{ task.sprint.start_date.strftime('%Y-%m-%d') }} - {{ task.sprint.end_date.strftime('%Y-%m-%d') }})
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
                 <a href="{{ url_for('manager.view_project_details', project_id=task.project_id) }}" class="back-btn">

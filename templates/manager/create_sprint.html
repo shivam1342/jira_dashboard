@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% block title %}Create Sprint{% endblock %}
+
+{% block content %}
+<style>
+  .page-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #1e293b;
+    border-left: 4px solid #2563eb;
+    padding-left: 12px;
+  }
+
+  .form-box {
+    max-width: 600px;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
+  }
+
+  input[type="text"],
+  input[type="date"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background-color: #f9fafb;
+    color: #1e293b;
+  }
+
+  input:focus {
+    outline: none;
+    border-color: #2563eb;
+    background-color: #fff;
+  }
+
+  .btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: #1d4ed8;
+  }
+
+  .info-text {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+</style>
+
+<h2 class="page-title">🏃 Create Sprint for {{ project.name }}</h2>
+
+<form method="POST" action="{{ url_for('manager.create_sprint', project_id=project.id) }}" class="form-box">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  
+  <div class="form-group">
+    <label for="name">Sprint Name *</label>
+    <input type="text" id="name" name="name" required placeholder="e.g., Sprint 1, Development Phase 1">
+  </div>
+
+  <div class="form-group">
+    <label for="start_date">Start Date *</label>
+    <input type="date" id="start_date" name="start_date" required>
+  </div>
+
+  <div class="form-group">
+    <label for="end_date">End Date *</label>
+    <input type="date" id="end_date" name="end_date" required>
+    <p class="info-text">End date must be after start date</p>
+  </div>
+
+  <div class="form-group">
+    <label for="status">Sprint Status *</label>
+    <select id="status" name="status" required>
+      <option value="planning">Planning</option>
+      <option value="active">Active</option>
+      <option value="completed">Completed</option>
+      <option value="archived">Archived</option>
+    </select>
+    <p class="info-text">Set the initial status for this sprint</p>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn-primary">Create Sprint</button>
+  </div>
+</form>
+
+<div style="max-width: 600px; margin-top: 15px;">
+  <a href="{{ url_for('manager.view_project_details', project_id=project.id) }}" class="text-blue-600 hover:underline">
+    ← Back to Project
+  </a>
+</div>
+
+{% endblock %}

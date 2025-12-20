@@ -1,4 +1,4 @@
-from flask import request, redirect, url_for, render_template, session, flash
+from flask import request, redirect, url_for, render_template, session, flash, current_app
 from models.login_info import LoginInfo, UserRole
 from models.user_profile import UserProfile
 from models.team_member import TeamMember, TeamRole
@@ -7,6 +7,7 @@ from models import db
 from flask_mailman import EmailMessage
 import random
 import bcrypt
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 
 def signup_page():
@@ -15,52 +16,83 @@ def signup_page():
 
 
 def signup():
-    username = request.form['username']
-    password = request.form['password']
-    name = request.form['name']
-    gmail = request.form['gmail']
-    phone = request.form['phone']
-    gender = request.form['gender']
-    team_id = request.form.get('team_id')
+    try:
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
+        name = request.form.get('name', '').strip()
+        gmail = request.form.get('gmail', '').strip()
+        phone = request.form.get('phone', '').strip()
+        gender = request.form.get('gender')
+        team_id = request.form.get('team_id')
 
-    if LoginInfo.query.filter_by(username=username).first():
-        flash('Username already exists', 'error')
-        return redirect(url_for('auth.signup_page'))
+        # Validation
+        if not all([username, password, name, gmail, phone]):
+            flash('All fields are required', 'error')
+            return redirect(url_for('auth.signup_page'))
 
-    if UserProfile.query.filter_by(gmail=gmail).first():
-        flash('Email already registered', 'error')
-        return redirect(url_for('auth.signup_page'))
+        if len(password) < 6:
+            flash('Password must be at least 6 characters', 'error')
+            return redirect(url_for('auth.signup_page'))
 
-    role = UserRole.developer if team_id else UserRole.visitor
+        # Check for existing username
+        if LoginInfo.query.filter_by(username=username).first():
+            flash('Username already exists', 'error')
+            current_app.logger.warning(f'Signup attempt with existing username: {username}')
+            return redirect(url_for('auth.signup_page'))
 
-    # Hash the password
-    hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        # Check for existing email
+        if UserProfile.query.filter_by(gmail=gmail).first():
+            flash('Email already registered', 'error')
+            current_app.logger.warning(f'Signup attempt with existing email: {gmail}')
+            return redirect(url_for('auth.signup_page'))
 
-    login_info = LoginInfo(username=username, password=hashed_password, role=role)
-    db.session.add(login_info)
-    db.session.commit()
+        role = UserRole.developer if team_id else UserRole.visitor
 
-    user_profile = UserProfile(
-        login_info_id=login_info.id,
-        name=name,
-        gmail=gmail,
-        phone=phone,
-        gender=gender
-    )
-    db.session.add(user_profile)
+        # Hash the password
+        hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    if team_id:
-        team_member = TeamMember(
-            user_id=login_info.id,
-            team_id=int(team_id),
-            role=TeamRole.developer
+        login_info = LoginInfo(username=username, password=hashed_password, role=role)
+        db.session.add(login_info)
+        db.session.flush()  # Get the ID without committing
+
+        user_profile = UserProfile(
+            login_info_id=login_info.id,
+            name=name,
+            gmail=gmail,
+            phone=phone,
+            gender=gender
         )
-        db.session.add(team_member)
+        db.session.add(user_profile)
 
-    db.session.commit()
+        if team_id:
+            team_member = TeamMember(
+                user_id=login_info.id,
+                team_id=int(team_id),
+                role=TeamRole.developer
+            )
+            db.session.add(team_member)
 
-    flash('Signup successful. Please login after admin approval.', 'success')
-    return redirect(url_for('auth.login_page'))
+        db.session.commit()
+        
+        current_app.logger.info(f'New user signup: {username} (email: {gmail}, role: {role.value})')
+        flash('Signup successful. Please login after admin approval.', 'success')
+        return redirect(url_for('auth.login_page'))
+
+    except IntegrityError as e:
+        db.session.rollback()
+        current_app.logger.error(f'Database integrity error during signup: {str(e)}')
+        flash('Error creating account. Username or email may already exist.', 'error')
+        return redirect(url_for('auth.signup_page'))
+    except ValueError as e:
+        db.session.rollback()
+        current_app.logger.error(f'ValueError during signup: {str(e)}')
+        flash('Invalid data provided. Please check your inputs.', 'error')
+        return redirect(url_for('auth.signup_page'))
+    except Exception as e:
+        db.session.rollback()
+        current_app.logger.error(f'Unexpected error during signup: {str(e)}', exc_info=True)
+        flash('An unexpected error occurred. Please try again.', 'error')
+        return redirect(url_for('auth.signup_page'))
 
 
 def login_page():
@@ -69,41 +101,59 @@ def login_page():
 
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        try:
+            username = request.form.get('username', '').strip()
+            password = request.form.get('password', '')
 
-        user = LoginInfo.query.filter_by(username=username, is_deleted=False).first()
+            if not username or not password:
+                flash("Please enter both username and password.", "error")
+                return redirect(url_for('auth.login_page'))
 
-        if not user:
-            flash("Invalid credentials.", "error")
+            user = LoginInfo.query.filter_by(username=username, is_deleted=False).first()
+
+            if not user:
+                current_app.logger.warning(f'Failed login attempt: username not found - {username}')
+                flash("Invalid credentials.", "error")
+                return redirect(url_for('auth.login_page'))
+
+            # Verify password using bcrypt
+            try:
+                if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+                    current_app.logger.warning(f'Failed login attempt: wrong password - {username}')
+                    flash("Invalid credentials.", "error")
+                    return redirect(url_for('auth.login_page'))
+            except Exception as bcrypt_error:
+                current_app.logger.error(f'Bcrypt error for user {username}: {str(bcrypt_error)}')
+                flash("Invalid credentials.", "error")
+                return redirect(url_for('auth.login_page'))
+
+            if not user.is_approved:
+                current_app.logger.info(f'Login attempt by unapproved user: {username}')
+                flash("Your account is pending admin approval.", "warning")
+                return redirect(url_for('auth.login_page'))
+
+            # Successful login
+            session['user_id'] = user.id
+            session['username'] = user.username
+            session['role'] = user.role.value
+            
+            current_app.logger.info(f'Successful login: {username} (role: {user.role.value}) from IP: {request.remote_addr}')
+
+            # Redirect based on role
+            if user.role in [UserRole.developer, UserRole.manager]:
+                return redirect(url_for('developer.developer_dashboard'))
+            elif user.role == UserRole.admin:
+                return redirect(url_for('admin.admin_dashboard'))
+            elif user.role == UserRole.visitor:
+                return redirect(url_for('visitor.view_approved_projects'))
+            else:
+                flash("Unsupported role.", "error")
+                return redirect(url_for('auth.login_page'))
+
+        except Exception as e:
+            current_app.logger.error(f'Unexpected error during login: {str(e)}', exc_info=True)
+            flash("An error occurred during login. Please try again.", "error")
             return redirect(url_for('auth.login_page'))
-
-        # Verify password using bcrypt
-        if not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
-            flash("Invalid credentials.", "error")
-            return redirect(url_for('auth.login_page'))
-
-        if not user.is_approved:
-            flash("Your account is pending admin approval.", "error")
-            return redirect(url_for('auth.login_page'))
-
-        session['user_id'] = user.id
-        session['username'] = user.username
-        session['role'] = user.role.value
-        
-        # print("Logged in user ID:", user.id)
-
-
-        if user.role in [UserRole.developer, UserRole.manager]:
-            return redirect(url_for('developer.developer_dashboard'))
-        elif user.role == UserRole.admin:
-            return redirect(url_for('admin.admin_dashboard'))
-        elif user.role == UserRole.visitor:
-            return redirect(url_for('visitor.view_approved_projects'))
-        else:
-            flash("Unsupported role.", "error")
-
-        return redirect(url_for('auth.login_page'))
 
     return render_template('auth/login.html')
 

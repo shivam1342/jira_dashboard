@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+{% block title %}Edit Sprint{% endblock %}
+
+{% block content %}
+<style>
+  .page-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: rgba(255,255,255,0.95);
+    margin-bottom: 30px;
+  }
+
+  .form-box {
+    max-width: 600px;
+    background: rgba(255,255,255,0.95);
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+  }
+
+  .form-group input[type="text"],
+  .form-group input[type="date"],
+  .form-group select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+  }
+
+  .btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .btn-primary:hover {
+    background-color: #1d4ed8;
+  }
+
+  .info-text {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
+
+  .status-info {
+    background: #f0f9ff;
+    border-left: 4px solid #3b82f6;
+    padding: 12px;
+    margin-bottom: 20px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #1e40af;
+  }
+</style>
+
+<h2 class="page-title">✏️ Edit Sprint: {{ sprint.name }}</h2>
+
+<form method="POST" action="{{ url_for('manager.edit_sprint', sprint_id=sprint.id) }}" class="form-box">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+  
+  <div class="status-info">
+    📌 Editing sprint for project: <strong>{{ project.name }}</strong>
+  </div>
+
+  <div class="form-group">
+    <label for="name">Sprint Name *</label>
+    <input type="text" id="name" name="name" required placeholder="e.g., Sprint 1" value="{{ sprint.name }}">
+  </div>
+
+  <div class="form-group">
+    <label for="start_date">Start Date *</label>
+    <input type="date" id="start_date" name="start_date" required value="{{ sprint.start_date.strftime('%Y-%m-%d') }}">
+  </div>
+
+  <div class="form-group">
+    <label for="end_date">End Date *</label>
+    <input type="date" id="end_date" name="end_date" required value="{{ sprint.end_date.strftime('%Y-%m-%d') }}">
+    <p class="info-text">End date must be after start date</p>
+  </div>
+
+  <div class="form-group">
+    <label for="status">Sprint Status *</label>
+    <select id="status" name="status" required>
+      <option value="planning" {% if sprint.status.name == 'planning' %}selected{% endif %}>Planning</option>
+      <option value="active" {% if sprint.status.name == 'active' %}selected{% endif %}>Active</option>
+      <option value="completed" {% if sprint.status.name == 'completed' %}selected{% endif %}>Completed</option>
+      <option value="archived" {% if sprint.status.name == 'archived' %}selected{% endif %}>Archived</option>
+    </select>
+    <p class="info-text">Update the sprint status based on progress</p>
+  </div>
+
+  <div class="form-group">
+    <button type="submit" class="btn-primary">💾 Save Changes</button>
+  </div>
+</form>
+
+<div style="max-width: 600px; margin-top: 15px;">
+  <a href="{{ url_for('manager.view_sprint_detail', sprint_id=sprint.id) }}" class="text-blue-600 hover:underline">
+    ← Back to Sprint
+  </a>
+</div>
+
+{% endblock %}

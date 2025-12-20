@@ -41,9 +41,11 @@
       </div>
     {% endif %}
 
-    <div class="text-center">
+    <div class="flex justify-between items-center mt-6">
       <a href="{{ url_for('manager.manager_dashboard') }}"
-         class="inline-block mt-6 text-blue-600 hover:underline font-medium">← Back to Dashboard</a>
+         class="text-blue-600 hover:underline font-medium">← Back to Dashboard</a>
+      <a href="{{ url_for('manager.edit_team') }}"
+         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors">Edit Team Members</a>
     </div>
 
   </div>

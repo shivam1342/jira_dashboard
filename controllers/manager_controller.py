@@ -8,6 +8,7 @@ from models.team import Team
 from models.team_project import TeamProject
 from models.team_member import TeamMember, TeamRole
 from models.notification import Notification
+from models.sprints import Sprint, SprintStatus
 from .decorators import manager_required
 from sqlalchemy.orm import joinedload
 
@@ -22,7 +23,12 @@ def manager_dashboard():
 
     project_ids = [tp.project_id for tp in team.shared_projects]
     projects = Project.query.filter(Project.id.in_(project_ids), Project.is_deleted == False).all()
-    return render_template('manager/dashboard.html', team=team, projects=projects)
+    
+    # Get all sprints for manager's projects
+    sprints = Sprint.query.filter(Sprint.project_id.in_(project_ids)).order_by(Sprint.start_date.desc()).all()
+    today = datetime.utcnow().date()
+    
+    return render_template('manager/dashboard.html', team=team, projects=projects, sprints=sprints, today=today)
 
 
 @manager_required
@@ -128,6 +134,42 @@ def team_details():
     members = TeamMember.query.filter_by(team_id=team_id).join(LoginInfo).all()
 
     return render_template('manager/team_detail.html', members=members)
+
+
+@manager_required
+def edit_team():
+    user_id = session.get('user_id')
+    team = Team.query.filter_by(manager_id=user_id).first()
+    
+    if not team:
+        flash("You are not assigned as a manager.")
+        return redirect(url_for('manager.manager_dashboard'))
+
+    if request.method in ['POST', 'PUT']:
+        selected_user_ids = request.form.getlist('member_ids')
+        selected_user_ids = set(map(int, selected_user_ids))
+
+        current_member_ids = {member.user_id for member in TeamMember.query.filter_by(team_id=team.id).all()}
+
+        # Add new members
+        for user_id_to_add in selected_user_ids - current_member_ids:
+            db.session.add(TeamMember(user_id=user_id_to_add, team_id=team.id, role=TeamRole.developer))
+
+        # Remove members (except manager)
+        for user_id_to_remove in current_member_ids - selected_user_ids:
+            if user_id_to_remove != team.manager_id:
+                TeamMember.query.filter_by(user_id=user_id_to_remove, team_id=team.id).delete()
+
+        db.session.commit()
+        flash('Team members updated successfully!')
+        return redirect(url_for('manager.team_details'))
+
+    team_members = TeamMember.query.filter_by(team_id=team.id).all()
+    all_developers = LoginInfo.query.filter_by(is_deleted=False).all()
+
+    return render_template('manager/edit_team.html', team=team,
+                           members=team_members,
+                           all_developers=all_developers)
 
 
 @manager_required
@@ -383,14 +425,208 @@ def view_project_details(project_id):
         .filter(TeamProject.project_id == project_id, Team.id != project.owner_team_id)\
         .all()
     all_teams = Team.query.all()
+    
+    sprints = Sprint.query.filter_by(project_id=project_id).order_by(Sprint.start_date).all()
 
     return render_template(
         'manager/project_detail.html',
         project=project,
         tasks=tasks,
         all_teams=all_teams,
-        access_teams=access_teams
+        access_teams=access_teams,
+        sprints=sprints
     )
+
+@manager_required
+def create_sprint(project_id):
+    user_id = session.get('user_id')
+    project = Project.query.filter_by(id=project_id, is_deleted=False, manager_id=user_id).first_or_404()
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+        status_str = request.form.get('status', 'planning')
+        
+        if not name or not start_date_str or not end_date_str:
+            flash("All fields are required.")
+            return redirect(request.url)
+        
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            
+            if end_date <= start_date:
+                flash("End date must be after start date.")
+                return redirect(request.url)
+            
+            # Convert status string to enum
+            status = SprintStatus[status_str]
+            
+            sprint = Sprint(
+                name=name,
+                start_date=start_date,
+                end_date=end_date,
+                status=status,
+                project_id=project_id,
+                created_at=datetime.utcnow()
+            )
+            
+            db.session.add(sprint)
+            db.session.commit()
+            flash(f'Sprint "{name}" created successfully!')
+            return redirect(url_for('manager.view_project_details', project_id=project_id))
+            
+        except ValueError:
+            flash("Invalid date format. Please use YYYY-MM-DD.")
+            return redirect(request.url)
+    
+    return render_template('manager/create_sprint.html', project=project)
+
+
+@manager_required
+def edit_sprint(sprint_id):
+    user_id = session.get('user_id')
+    sprint = Sprint.query.get_or_404(sprint_id)
+    
+    # Verify manager owns the project
+    project = Project.query.filter_by(id=sprint.project_id, manager_id=user_id, is_deleted=False).first_or_404()
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        start_date_str = request.form.get('start_date')
+        end_date_str = request.form.get('end_date')
+        status_str = request.form.get('status')
+        
+        if not name or not start_date_str or not end_date_str or not status_str:
+            flash("All fields are required.")
+            return redirect(request.url)
+        
+        try:
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+            
+            if end_date <= start_date:
+                flash("End date must be after start date.")
+                return redirect(request.url)
+            
+            # Update sprint
+            sprint.name = name
+            sprint.start_date = start_date
+            sprint.end_date = end_date
+            sprint.status = SprintStatus[status_str]
+            
+            db.session.commit()
+            flash(f'Sprint "{name}" updated successfully!')
+            return redirect(url_for('manager.view_sprint_detail', sprint_id=sprint_id))
+            
+        except ValueError:
+            flash("Invalid date format. Please use YYYY-MM-DD.")
+            return redirect(request.url)
+    
+    return render_template('manager/edit_sprint.html', sprint=sprint, project=project)
+
+
+@manager_required
+def remove_task_from_sprint(task_id):
+    user_id = session.get('user_id')
+    task = Task.query.get_or_404(task_id)
+    
+    # Verify manager owns the project
+    project = Project.query.filter_by(id=task.project_id, manager_id=user_id, is_deleted=False).first_or_404()
+    
+    if not task.sprint_id:
+        flash("Task is not assigned to any sprint.")
+        return redirect(request.referrer or url_for('manager.view_project_details', project_id=project.id))
+    
+    sprint_id = task.sprint_id
+    sprint_name = task.sprint.name if task.sprint else "sprint"
+    
+    # Remove task from sprint
+    task.sprint_id = None
+    db.session.commit()
+    
+    flash(f'Task "{task.task_name}" removed from {sprint_name}.')
+    
+    # Redirect back to sprint detail if coming from there, otherwise to project
+    if request.referrer and f'/sprints/{sprint_id}' in request.referrer:
+        return redirect(url_for('manager.view_sprint_detail', sprint_id=sprint_id))
+    else:
+        return redirect(url_for('manager.view_project_details', project_id=project.id))
+
+
+@manager_required
+def assign_tasks_to_sprint(project_id):
+    user_id = session.get('user_id')
+    project = Project.query.filter_by(id=project_id, is_deleted=False, manager_id=user_id).first_or_404()
+    
+    if request.method == 'POST':
+        sprint_id = request.form.get('sprint_id')
+        task_ids = request.form.getlist('task_ids')
+        
+        if not sprint_id:
+            flash("Please select a sprint.")
+            return redirect(request.url)
+        
+        sprint_id = int(sprint_id)
+        sprint = Sprint.query.filter_by(id=sprint_id, project_id=project_id).first()
+        
+        if not sprint:
+            flash("Invalid sprint selected.")
+            return redirect(request.url)
+        
+        # Track tasks that are being moved from other sprints
+        moved_count = 0
+        assigned_count = 0
+        
+        # Update tasks with sprint_id
+        for task_id in task_ids:
+            task = Task.query.get(int(task_id))
+            if task and task.project_id == project_id:
+                if task.sprint_id and task.sprint_id != sprint_id:
+                    moved_count += 1
+                elif not task.sprint_id:
+                    assigned_count += 1
+                task.sprint_id = sprint_id
+        
+        db.session.commit()
+        
+        # Create informative flash message
+        if moved_count > 0 and assigned_count > 0:
+            flash(f'✅ {assigned_count} task(s) assigned and {moved_count} task(s) moved to sprint: {sprint.name}')
+        elif moved_count > 0:
+            flash(f'✅ {moved_count} task(s) moved to sprint: {sprint.name}')
+        else:
+            flash(f'✅ {assigned_count} task(s) assigned to sprint: {sprint.name}')
+            
+        return redirect(url_for('manager.view_project_details', project_id=project_id))
+    
+    # GET: Show form
+    sprints = Sprint.query.filter_by(project_id=project_id).all()
+    tasks = Task.query.filter_by(project_id=project_id, is_deleted=False).all()
+    
+    return render_template('manager/assign_tasks_to_sprint.html',
+                           project=project,
+                           sprints=sprints,
+                           tasks=tasks)
+
+
+@manager_required
+def view_sprint_detail(sprint_id):
+    user_id = session.get('user_id')
+    sprint = Sprint.query.get_or_404(sprint_id)
+    
+    project = Project.query.filter_by(id=sprint.project_id, manager_id=user_id, is_deleted=False).first_or_404()
+    
+    sprint_tasks = Task.query.filter_by(sprint_id=sprint_id, is_deleted=False)\
+        .join(LoginInfo, Task.assigned_to_user_id == LoginInfo.id)\
+        .add_entity(LoginInfo).all()
+    
+    return render_template('manager/sprint_detail.html',
+                         sprint=sprint,
+                         project=project,
+                         tasks=sprint_tasks)
+
 
 @manager_required
 def logout():

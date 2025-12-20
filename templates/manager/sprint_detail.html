@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sprint Details - {{ sprint.name }}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #1a202c;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .page-title {
+      font-size: 32px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-secondary {
+      background: #f7fafc;
+      color: #4a5568;
+      border: 2px solid #e2e8f0;
+    }
+
+    .btn-secondary:hover {
+      background: #edf2f7;
+      transform: translateY(-2px);
+    }
+
+    .sprint-info {
+      background: #f7fafc;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+
+    .sprint-info p {
+      margin: 10px 0;
+      font-size: 16px;
+      color: #4a5568;
+    }
+
+    .sprint-info strong {
+      color: #2d3748;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-box {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-box h4 {
+      color: #4a5568;
+      font-size: 14px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .stat-box p {
+      font-size: 32px;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .section-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 20px;
+    }
+
+    .task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .task-card {
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .task-card:hover {
+      border-color: #667eea;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    }
+
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .task-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+    }
+
+    .task-badge {
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .badge-to_do { background: #fed7d7; color: #c53030; }
+    .badge-in_progress { background: #feebc8; color: #c05621; }
+    .badge-completed { background: #c6f6d5; color: #22543d; }
+    .badge-failed { background: #e2e8f0; color: #4a5568; }
+
+    .task-meta {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: #718096;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #718096;
+    }
+
+    .empty-state h3 {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="page-title">🏃 {{ sprint.name }}</h1>
+      <div style="display: flex; gap: 12px;">
+        <a href="{{ url_for('manager.edit_sprint', sprint_id=sprint.id) }}" class="btn btn-primary">✏️ Edit Sprint</a>
+        <a href="{{ url_for('manager.view_project_details', project_id=project.id) }}" class="btn btn-secondary">🔙 Back to Project</a>
+      </div>
+    </div>
+
+    <div class="sprint-info">
+      <p><strong>Project:</strong> {{ project.name }}</p>
+      <p><strong>Status:</strong> 
+        {% if sprint.status.name == 'active' %}
+          <span style="background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 6px; font-weight: 600;">● Active</span>
+        {% elif sprint.status.name == 'planning' %}
+          <span style="background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 6px; font-weight: 600;">📋 Planning</span>
+        {% elif sprint.status.name == 'completed' %}
+          <span style="background: #e0e7ff; color: #4338ca; padding: 4px 10px; border-radius: 6px; font-weight: 600;">✓ Completed</span>
+        {% elif sprint.status.name == 'archived' %}
+          <span style="background: #e2e8f0; color: #4a5568; padding: 4px 10px; border-radius: 6px; font-weight: 600;">📦 Archived</span>
+        {% endif %}
+      </p>
+      <p><strong>Start Date:</strong> {{ sprint.start_date.strftime('%B %d, %Y') }}</p>
+      <p><strong>End Date:</strong> {{ sprint.end_date.strftime('%B %d, %Y') }}</p>
+      <p><strong>Duration:</strong> {{ (sprint.end_date - sprint.start_date).days }} days</p>
+    </div>
+
+    <div class="stats-row">
+      {% set total_tasks = tasks | length %}
+      {% set completed_tasks = tasks | selectattr('0.completion_status.name', 'equalto', 'completed') | list | length %}
+      {% set progress_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0 %}
+      
+      <div class="stat-box">
+        <h4>Total Tasks</h4>
+        <p>{{ total_tasks }}</p>
+      </div>
+      <div class="stat-box">
+        <h4>Completed</h4>
+        <p>{{ completed_tasks }}</p>
+      </div>
+      <div class="stat-box">
+        <h4>Progress</h4>
+        <p>{{ "%.0f"|format(progress_percentage) }}%</p>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3 class="section-title">📋 Sprint Tasks</h3>
+      
+      {% if tasks %}
+        <div class="task-list">
+          {% for task, assignee in tasks %}
+            <div class="task-card">
+              <div class="task-header">
+                <div class="task-name" onclick="window.location.href='{{ url_for('manager.task_details', task_id=task.id) }}'" style="cursor: pointer; flex: 1;">
+                  {{ task.task_name }}
+                </div>
+                <span class="task-badge badge-{{ task.completion_status.name }}">
+                  {{ task.completion_status.name.replace('_', ' ').title() }}
+                </span>
+                <form method="POST" action="{{ url_for('manager.remove_task_from_sprint', task_id=task.id) }}" style="display: inline; margin-left: 10px;" onsubmit="return confirm('Remove this task from the sprint?');">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;">
+                    ✕ Remove
+                  </button>
+                </form>
+              </div>
+              <div class="task-meta" onclick="window.location.href='{{ url_for('manager.task_details', task_id=task.id) }}'" style="cursor: pointer;">
+                <span>👤 {{ assignee.username }}</span>
+                {% if task.deadline %}
+                  <span>📅 Due: {{ task.deadline.strftime('%Y-%m-%d') }}</span>
+                {% endif %}
+                <span>🏷️ {{ task.priority.name.title() }}</span>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <h3>No tasks in this sprint yet</h3>
+          <p>Assign tasks to this sprint from the project details page.</p>
+          <a href="{{ url_for('manager.assign_tasks_to_sprint', project_id=project.id) }}" class="btn btn-primary" style="margin-top: 20px;">📋 Assign Tasks</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

@@ -36,9 +36,11 @@ class Task(db.Model):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id', ondelete='CASCADE'), nullable=False)
     manager_id = db.Column(db.Integer, db.ForeignKey('login_info.id', ondelete='SET NULL'), nullable=True)
     assigned_to_user_id = db.Column(db.Integer, db.ForeignKey('login_info.id', ondelete='SET NULL'), nullable=True)
+    sprint_id = db.Column(db.Integer, db.ForeignKey('sprint.id', ondelete='SET NULL'), nullable=True)
 
     manager = db.relationship('LoginInfo', back_populates='managed_tasks', foreign_keys=[manager_id])
     assignee = db.relationship('LoginInfo', back_populates='assigned_tasks', foreign_keys=[assigned_to_user_id])
+    sprint = db.relationship('Sprint', backref='tasks')
     notes = db.relationship('Note', back_populates='task', cascade='all, delete-orphan')
 
 
