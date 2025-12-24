@@ -118,6 +118,14 @@ app.register_blueprint(developer_bp, url_prefix='/developer')
 app.register_blueprint(admin_bp)
 app.register_blueprint(visitor_bp)
 
+# Exempt API endpoints from CSRF protection
+from controllers.developer_controller import update_task_status_api as dev_api, update_subtask_status_api as dev_subtask_api
+from controllers.manager_controller import update_task_status_api as mgr_api, update_subtask_status as mgr_subtask_api
+csrf.exempt(dev_api)
+csrf.exempt(mgr_api)
+csrf.exempt(dev_subtask_api)
+csrf.exempt(mgr_subtask_api)
+
 # Exempt notification AJAX endpoints from CSRF
 csrf.exempt(common_bp)
 

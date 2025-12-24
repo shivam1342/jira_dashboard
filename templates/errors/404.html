@@ -203,7 +203,7 @@
             <ul>
                 {% if session.get('role') == 'admin' %}
                 <li><a href="{{ url_for('admin.admin_dashboard') }}">Admin Dashboard</a></li>
-                <li><a href="{{ url_for('admin.list_users') }}">Manage Users</a></li>
+                <li><a href="{{ url_for('admin.view_users') }}">Manage Users</a></li>
                 <li><a href="{{ url_for('admin.list_teams') }}">Manage Teams</a></li>
                 {% elif session.get('role') == 'manager' %}
                 <li><a href="{{ url_for('manager.manager_dashboard') }}">Manager Dashboard</a></li>

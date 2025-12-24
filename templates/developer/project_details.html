@@ -580,9 +580,7 @@ function updateTaskStatusInDB(taskId, newStatus) {
       'Content-Type': 'application/json',
       'X-CSRFToken': csrfToken
     },
-    body: JSON.stringify({
-      status: newStatus
-    })
+    body: JSON.stringify({ status: newStatus })
   })
   .then(response => {
     if (!response.ok) {
@@ -603,7 +601,7 @@ function updateTaskStatusInDB(taskId, newStatus) {
     }
   })
   .catch(error => {
-    console.error('Error:', error);
+    console.error('Error updating task status:', error);
     showNotification('An error occurred while updating task status', 'error');
   });
 }

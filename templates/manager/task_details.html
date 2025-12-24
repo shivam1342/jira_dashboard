@@ -581,15 +581,14 @@
         }
 
         async function updateSubtaskStatus(subtaskId, newStatus) {
-            const response = await fetch(`/manager/subtasks/${subtaskId}/update-status`, {
+            const response = await fetch(`/manager/subtasks/${subtaskId}/status`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-Requested-With': 'XMLHttpRequest'
                 },
                 body: JSON.stringify({
-                    subtask_id: parseInt(subtaskId),
-                    new_status: newStatus
+                    status: newStatus
                 })
             });
 

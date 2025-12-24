@@ -16,8 +16,10 @@ admin_bp.route('/teams/<int:team_id>', methods=['POST', 'DELETE'])(admin_control
 
 # Users - RESTful routes
 admin_bp.route('/users', methods=['GET'])(admin_controller.view_users)  # List
+admin_bp.route('/users', methods=['GET'])(admin_controller.view_users)  # List (alias for compatibility)
 admin_bp.route('/users/new', methods=['GET'])(admin_controller.create_user)  # Show create form
 admin_bp.route('/users', methods=['POST'])(admin_controller.create_user)  # Create
+admin_bp.route('/users/<int:user_id>', methods=['GET'])(admin_controller.edit_user)  # Show user details
 admin_bp.route('/users/<int:user_id>/edit', methods=['GET'])(admin_controller.edit_user)  # Show edit form
 admin_bp.route('/users/<int:user_id>', methods=['POST', 'PUT'])(admin_controller.edit_user)  # Update
 admin_bp.route('/users/<int:user_id>', methods=['POST', 'DELETE'])(admin_controller.delete_user)  # Delete

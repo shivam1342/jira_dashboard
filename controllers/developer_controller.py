@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, session, flash, jsonify
+from flask import render_template, request, redirect, url_for, session, flash, jsonify, current_app
 from models import db
 from models.project import Project
 from models.task import Task, CompletionStatus, SubtaskType, SubTask
@@ -15,16 +15,37 @@ from sqlalchemy.orm import joinedload
 def developer_dashboard():
     user_id = session.get('user_id')
 
-    member = TeamMember.query.filter_by(user_id=user_id).first()
-    team_id = member.team_id if member else None
+    # Get ALL teams the user is a member of (not just the first one)
+    team_memberships = TeamMember.query.filter_by(user_id=user_id).all()
+    team_ids = [tm.team_id for tm in team_memberships]
 
-    projects = Project.query \
-        .join(Project.team_links) \
-        .join(TeamProject.team) \
-        .join(Team.members) \
-        .filter(LoginInfo.id == user_id) \
+    # Show projects where:
+    # 1. User is the manager (manager_id == user_id)
+    projects_as_manager = Project.query.filter_by(manager_id=user_id, is_deleted=False).all()
+    
+    # 2. User has assigned tasks (as developer)
+    projects_with_tasks = Project.query \
+        .join(Task, Task.project_id == Project.id) \
+        .filter(Task.assigned_to_user_id == user_id) \
         .filter(Project.is_deleted == False) \
         .distinct().all()
+    
+    # 3. User is a member of team(s) that have access to projects
+    projects_via_team = []
+    if team_ids:
+        projects_via_team = Project.query \
+            .join(TeamProject, TeamProject.project_id == Project.id) \
+            .filter(TeamProject.team_id.in_(team_ids)) \
+            .filter(Project.is_deleted == False) \
+            .all()
+    
+    # Combine all three lists and remove duplicates
+    project_ids_seen = set()
+    projects = []
+    for project in projects_as_manager + projects_with_tasks + projects_via_team:
+        if project.id not in project_ids_seen:
+            projects.append(project)
+            project_ids_seen.add(project.id)
 
     total_tasks = Task.query.filter_by(assigned_to_user_id=user_id).count()
     completed_tasks = Task.query.filter_by(
@@ -34,10 +55,11 @@ def developer_dashboard():
     progress_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
 
     is_team_manager = False
-    if team_id:
+    for team_id in team_ids:
         team = Team.query.get(team_id)
         if team and team.manager_id == user_id:
             is_team_manager = True
+            break
 
     return render_template('developer/dashboard.html',
                            projects=projects,
@@ -139,33 +161,55 @@ def update_task_status(task_id):
                            statuses=[status.name for status in CompletionStatus])
 
 
-@developer_required
 def update_task_status_api(task_id):
+    """API endpoint for kanban drag-and-drop - CSRF exempt"""
     from models import Task, db
     from models.task import CompletionStatus
 
-    task = Task.query.get_or_404(task_id)
+    print(f"[DEBUG] API called for task_id: {task_id}")
+    print(f"[DEBUG] Session user_id: {session.get('user_id')}")
+    print(f"[DEBUG] Request method: {request.method}")
+    print(f"[DEBUG] Request headers: {dict(request.headers)}")
+    
+    # Check if user is authenticated
+    if 'user_id' not in session:
+        print("[DEBUG] No user_id in session - returning 401")
+        return jsonify({'success': False, 'message': 'Unauthorized: Please log in'}), 401
 
-    print("Session user ID:", session.get('user_id'))
-    print("Assigned to user ID:", task.assigned_to_user_id)
+    task = Task.query.get_or_404(task_id)
+    print(f"[DEBUG] Task found: {task.task_name}")
+    print(f"[DEBUG] Task assigned to: {task.assigned_to_user_id}")
 
     if task.assigned_to_user_id != session.get('user_id'):
-        return jsonify({'success': False, 'message': 'Unauthorized'}), 403
+        print("[DEBUG] User not authorized for this task - returning 403")
+        return jsonify({'success': False, 'message': 'Unauthorized: You can only update tasks assigned to you'}), 403
 
     data = request.get_json()
+    print(f"[DEBUG] Request data: {data}")
     new_status = data.get('status')
+    print(f"[DEBUG] New status: {new_status}")
 
     if not new_status:
+        print("[DEBUG] No status provided - returning 400")
         return jsonify({'success': False, 'message': 'Missing status'}), 400
 
     try:
-        task.completion_status = CompletionStatus(new_status.lower())
+        # Convert status string to enum using attribute access
+        if hasattr(CompletionStatus, new_status):
+            old_status = task.completion_status
+            task.completion_status = getattr(CompletionStatus, new_status)
+            print(f"[DEBUG] Status changed from {old_status} to {task.completion_status}")
+        else:
+            print(f"[DEBUG] Invalid status: {new_status}")
+            return jsonify({'success': False, 'message': f'Invalid status: {new_status}'}), 400
 
         db.session.commit()
-        return jsonify({'success': True})
-    except (ValueError, KeyError) as e:
-        print("Enum conversion error:", e)
-        return jsonify({'success': False, 'message': 'Invalid status'}), 400
+        print("[DEBUG] Database commit successful")
+        return jsonify({'success': True, 'message': 'Task status updated successfully'})
+    except Exception as e:
+        print(f"[DEBUG] Exception occurred: {str(e)}")
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error updating task: {str(e)}'}), 500
 
 
 @developer_required
@@ -254,6 +298,69 @@ def create_subtask(project_id):
         return redirect(url_for('developer.view_project_details', project_id=project_id))
 
     return render_template('developer/create_subtask.html', project=project, tasks=tasks)
+
+def update_subtask_status_api(subtask_id):
+    """API endpoint for subtask kanban drag-and-drop - CSRF exempt"""
+    from models.task import CompletionStatus
+    
+    # Check if user is authenticated
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized: Please log in'}), 401
+    
+    user_id = session.get('user_id')
+    subtask = SubTask.query.get_or_404(subtask_id)
+    
+    # Security check: Ensure the subtask's parent task is assigned to this developer
+    if subtask.parent_task.assigned_to_user_id != user_id:
+        return jsonify({'success': False, 'message': 'Unauthorized: You can only update subtasks from your own tasks'}), 403
+    
+    data = request.get_json()
+    new_status = data.get('status')
+    
+    if not new_status:
+        return jsonify({'success': False, 'message': 'Missing status'}), 400
+    
+    try:
+        # Convert status string to enum using attribute access
+        if hasattr(CompletionStatus, new_status):
+            subtask.status = getattr(CompletionStatus, new_status)
+        else:
+            return jsonify({'success': False, 'message': f'Invalid status: {new_status}'}), 400
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Subtask status updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error updating subtask: {str(e)}'}), 500
+
+@developer_required
+def edit_subtask(subtask_id):
+    """Edit subtask details"""
+    from forms import SubtaskForm
+    from models.task import CompletionStatus
+    
+    user_id = session.get('user_id')
+    subtask = SubTask.query.get_or_404(subtask_id)
+    
+    # Security check: Ensure the subtask's parent task is assigned to this developer
+    if subtask.parent_task.assigned_to_user_id != user_id:
+        flash("Unauthorized: You can only edit subtasks from your own tasks.")
+        return redirect(url_for('developer.developer_dashboard'))
+    
+    form = SubtaskForm(obj=subtask)
+    
+    if form.validate_on_submit():
+        subtask.name = form.name.data
+        subtask.type = form.type.data
+        subtask.status = form.status.data
+        subtask.due_date = form.due_date.data
+        
+        db.session.commit()
+        flash("Subtask updated successfully.")
+        return redirect(url_for('developer.view_task_details', task_id=subtask.parent_task_id))
+    
+    return render_template('developer/edit_subtask.html', form=form, subtask=subtask)
+
 
 @developer_required
 def logout():

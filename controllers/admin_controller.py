@@ -187,11 +187,17 @@ def approve_user(user_id):
 @admin_required
 def edit_user(user_id):
     user = LoginInfo.query.get_or_404(user_id)
-    print(f"DEBUG: edit_user called with method: {request.method}")
 
     if request.method in ['POST', 'PUT']:
-        user.username = request.form['username']
-        user.role = UserRole(request.form['role'])
+        username = request.form.get('username')
+        role = request.form.get('role')
+        
+        if not username or not role:
+            flash('Username and role are required.', 'error')
+            return render_template('admin/edit_user.html', user=user)
+        
+        user.username = username
+        user.role = UserRole(role)
         db.session.commit()
         flash('User updated successfully!')
         return redirect(url_for('admin.view_users'))
@@ -343,13 +349,18 @@ def create_user():
     teams = Team.query.filter_by(is_deleted=False).all()
 
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        role = request.form['role']
-        name = request.form['name']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role')
+        name = request.form.get('name')
         gmail = request.form.get('gmail')
         phone = request.form.get('phone')
         team_id = request.form.get('team_id')
+        
+        # Validate required fields
+        if not all([username, password, role, name]):
+            flash('Username, password, role, and name are required.', 'error')
+            return render_template('admin/create_user.html', teams=teams)
 
         try:
             # Hash the password

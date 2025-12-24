@@ -21,11 +21,12 @@ def manager_dashboard():
         flash("You are not assigned as a manager.")
         return redirect(url_for('auth.login_page'))
 
-    project_ids = [tp.project_id for tp in team.shared_projects]
-    projects = Project.query.filter(Project.id.in_(project_ids), Project.is_deleted == False).all()
+    # Show only projects created by this manager
+    projects = Project.query.filter_by(manager_id=user_id, is_deleted=False).all()
     
     # Get all sprints for manager's projects
-    sprints = Sprint.query.filter(Sprint.project_id.in_(project_ids)).order_by(Sprint.start_date.desc()).all()
+    project_ids = [p.id for p in projects]
+    sprints = Sprint.query.filter(Sprint.project_id.in_(project_ids)).order_by(Sprint.start_date.desc()).all() if project_ids else []
     today = datetime.utcnow().date()
     
     return render_template('manager/dashboard.html', team=team, projects=projects, sprints=sprints, today=today)
@@ -304,7 +305,14 @@ def create_subtask(project_id):
 
 @manager_required
 def update_task_status(task_id):
+    user_id = session.get('user_id')
     task = Task.query.get_or_404(task_id)
+    
+    # Security check: Ensure the task belongs to a project managed by this manager
+    project = Project.query.filter_by(id=task.project_id, manager_id=user_id).first()
+    if not project:
+        flash("You can only update tasks from your own projects.")
+        return redirect(url_for('manager.manager_dashboard'))
 
     if request.method == 'POST':
         new_status = request.form.get('status')
@@ -325,6 +333,42 @@ def update_task_status(task_id):
         return redirect(url_for('manager.manager_dashboard'))
 
     return render_template('manager/update_status.html', task=task, statuses=[status.name for status in CompletionStatus])
+
+
+def update_task_status_api(task_id):
+    """API endpoint for kanban drag-and-drop - CSRF exempt"""
+    from models.task import CompletionStatus
+    
+    # Check if user is authenticated
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized: Please log in'}), 401
+    
+    user_id = session.get('user_id')
+    task = Task.query.get_or_404(task_id)
+    
+    # Security check: Ensure the task belongs to a project managed by this manager
+    project = Project.query.filter_by(id=task.project_id, manager_id=user_id).first()
+    if not project:
+        return jsonify({'success': False, 'message': 'Unauthorized: You can only update tasks from your own projects'}), 403
+    
+    data = request.get_json()
+    new_status = data.get('status')
+    
+    if not new_status:
+        return jsonify({'success': False, 'message': 'Missing status'}), 400
+    
+    try:
+        # Convert status string to enum using attribute access
+        if hasattr(CompletionStatus, new_status):
+            task.completion_status = getattr(CompletionStatus, new_status)
+        else:
+            return jsonify({'success': False, 'message': f'Invalid status: {new_status}'}), 400
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Task status updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error updating task: {str(e)}'}), 500
 
 
 @manager_required
@@ -348,52 +392,83 @@ def task_details(task_id):
 
     return render_template('manager/task_details.html', task=task, kanban_columns=kanban_columns)
 
-@manager_required
 def update_subtask_status(subtask_id):
+    """API endpoint for manager subtask kanban drag-and-drop - CSRF exempt"""
     from models import SubTask, db
     from models.task import CompletionStatus
+    
+    # Check if user is authenticated
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized: Please log in'}), 401
+    
+    user_id = session.get('user_id')
     data = request.get_json()
+    new_status = data.get('status')
 
-    new_status_str = data.get('new_status')
-    # print("Received:", subtask_id, new_status_str) 
-
-    if not new_status_str:
+    if not new_status:
         return jsonify({'success': False, 'message': 'Missing status'}), 400
 
     subtask = SubTask.query.get(subtask_id)
     if not subtask:
         return jsonify({'success': False, 'message': 'Subtask not found'}), 404
+    
+    # Security check: Ensure the subtask's task belongs to a project managed by this manager
+    project = Project.query.filter_by(id=subtask.parent_task.project_id, manager_id=user_id).first()
+    if not project:
+        return jsonify({'success': False, 'message': 'Unauthorized: You can only update subtasks from your own projects'}), 403
 
     try:
-        new_status_enum = CompletionStatus(new_status_str)
-    except ValueError:
-        return jsonify({'success': False, 'message': 'Invalid status'}), 400
-
-    subtask.completion_status = new_status_enum
-    db.session.commit()
-
-    # print(f"Subtask {subtask_id} status updated to {new_status_enum}")
-    return jsonify({'success': True, 'message': 'Status updated'})
+        # Convert status string to enum using attribute access
+        if hasattr(CompletionStatus, new_status):
+            subtask.status = getattr(CompletionStatus, new_status)
+        else:
+            return jsonify({'success': False, 'message': f'Invalid status: {new_status}'}), 400
+        
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Subtask status updated successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Error updating subtask: {str(e)}'}), 500
 
 
 
 
 @manager_required
 def edit_task(task_id):
+    from models.task import PriorityLevel, CompletionStatus
+    
     task = Task.query.get_or_404(task_id)
     users = LoginInfo.query.join(TeamMember).filter(TeamMember.role == TeamRole.developer).all()
 
     if request.method in ['POST', 'PUT']:
-        task.task_name = request.form.get('name')
+        task.task_name = request.form.get('task_name')
         task.summary = request.form.get('summary')
         task.description = request.form.get('description')
-        task.assigned_to_user_id = int(request.form.get('assigned_to'))
-        task.due_date = datetime.strptime(request.form.get('due_date'), "%Y-%m-%d")
+        
+        # Update priority
+        priority_name = request.form.get('priority')
+        if priority_name and hasattr(PriorityLevel, priority_name):
+            task.priority = getattr(PriorityLevel, priority_name)
+        
+        # Update status
+        status_name = request.form.get('completion_status')
+        if status_name and hasattr(CompletionStatus, status_name):
+            task.completion_status = getattr(CompletionStatus, status_name)
+        
+        # Update due date if provided
+        due_date_str = request.form.get('due_date')
+        if due_date_str:
+            task.due_date = datetime.strptime(due_date_str, "%Y-%m-%d").date()
+        
         db.session.commit()
-        flash('Task updated.')
-        return redirect(url_for('manager.manager_dashboard'))
+        flash('Task updated successfully.')
+        return redirect(url_for('manager.view_project_details', project_id=task.project_id))
 
-    return render_template('manager/edit_task.html', task=task, users=users)
+    return render_template('manager/edit_task.html', 
+                         task=task, 
+                         users=users,
+                         priorities=PriorityLevel,
+                         completion_statuses=CompletionStatus)
 
 
 @manager_required

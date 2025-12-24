@@ -140,8 +140,10 @@ def login():
             current_app.logger.info(f'Successful login: {username} (role: {user.role.value}) from IP: {request.remote_addr}')
 
             # Redirect based on role
-            if user.role in [UserRole.developer, UserRole.manager]:
+            if user.role == UserRole.developer:
                 return redirect(url_for('developer.developer_dashboard'))
+            elif user.role == UserRole.manager:
+                return redirect(url_for('manager.manager_dashboard'))
             elif user.role == UserRole.admin:
                 return redirect(url_for('admin.admin_dashboard'))
             elif user.role == UserRole.visitor:

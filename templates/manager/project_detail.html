@@ -582,37 +582,45 @@
       // Move the task card visually first
       targetColumn.appendChild(taskEl);
 
-      // Create form data to match your existing endpoint
-      const formData = new FormData();
-      formData.append('status', newStatus);
-
-      // Send POST request to your existing update_task_status endpoint
-      fetch(`/manager/tasks/update-status/${taskId}`, {
-  method: 'POST',
-  body: formData,
-  headers: {
-    'X-Requested-With': 'XMLHttpRequest'
-  }
-})
-
+      // Send POST request to the API endpoint
+      fetch(`/manager/api/tasks/${taskId}/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({
+          status: newStatus
+        })
+      })
       .then(response => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
         }
-        return response.text(); // Your endpoint likely returns HTML, not JSON
+        return response.json();
       })
       .then(data => {
-        console.log('Status updated successfully');
-        hideLoading();
-        showSuccessMessage();
+        if (data.success) {
+          console.log('Status updated successfully');
+          hideLoading();
+          showSuccessMessage();
+        } else {
+          throw new Error(data.message || 'Failed to update status');
+        }
       })
       .catch(error => {
         console.error('Error updating status:', error);
         hideLoading();
-        // Revert the visual change if there was an error
         alert('Failed to update task status. Please refresh the page.');
         location.reload();
       });
+    }
+
+    // Get CSRF token from meta tag or form
+    function getCsrfToken() {
+      const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || 
+                       document.querySelector('[name="csrf-token"]')?.getAttribute('content');
+      return csrfToken || '';
     }
 
     // Add drag over effects
