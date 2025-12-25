@@ -5,10 +5,15 @@ from models.login_info import LoginInfo, UserRole
 from models.user_profile import UserProfile
 from models.project import Project
 from models.team_member import TeamMember, TeamRole
+from models.task import Task, CompletionStatus
+from models.notification import Notification
 from .decorators import admin_required
 from flask_mailman import EmailMessage
 import bcrypt
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from datetime import datetime, timedelta
+from sqlalchemy import func, desc
+import os
 
 @admin_required
 def create_team():
@@ -406,3 +411,166 @@ def logout():
     session.clear()
     flash("Logged out successfully.")
     return redirect(url_for('auth.login'))
+
+
+# ==================== LOGS & ACTIVITY TRACKING ====================
+
+@admin_required
+def system_logs():
+    """View application system logs"""
+    try:
+        log_file_path = os.path.join(current_app.root_path, 'logs', 'app.log')
+        logs = []
+        
+        if os.path.exists(log_file_path):
+            with open(log_file_path, 'r', encoding='utf-8') as f:
+                # Read last 500 lines
+                all_lines = f.readlines()
+                recent_lines = all_lines[-500:] if len(all_lines) > 500 else all_lines
+                
+                for line in reversed(recent_lines):
+                    if line.strip():
+                        logs.append({
+                            'timestamp': line[:23] if len(line) > 23 else '',
+                            'level': 'ERROR' if 'ERROR' in line else 'WARNING' if 'WARNING' in line else 'INFO',
+                            'message': line[24:] if len(line) > 24 else line
+                        })
+        
+        return render_template('admin/system_logs.html', logs=logs)
+    except Exception as e:
+        current_app.logger.error(f'Error reading system logs: {str(e)}')
+        flash('Error loading system logs', 'error')
+        return render_template('admin/system_logs.html', logs=[])
+
+
+@admin_required
+def user_activity():
+    """View user activity and login history"""
+    try:
+        # Get recent login activity from logs
+        activities = []
+        
+        # Get all users with their last login info
+        users = LoginInfo.query.all()
+        for user in users:
+            if user.profile:
+                activities.append({
+                    'user': user.username,
+                    'name': user.profile.name,
+                    'role': user.role,
+                    'email': user.profile.gmail,
+                    'status': 'Approved' if user.is_approved else 'Pending',
+                    'last_activity': 'Recently Active'  # Could track this in future
+                })
+        
+        # Get recent notifications for activity tracking
+        recent_notifications = Notification.query.order_by(
+            desc(Notification.created_at)
+        ).limit(50).all()
+        
+        notification_activity = [{
+            'user': notif.user.username if notif.user else 'System',
+            'action': notif.description,
+            'timestamp': notif.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'is_read': notif.is_read
+        } for notif in recent_notifications]
+        
+        return render_template('admin/user_activity.html', 
+                             users=activities,
+                             notifications=notification_activity)
+    except Exception as e:
+        current_app.logger.error(f'Error loading user activity: {str(e)}')
+        flash('Error loading user activity', 'error')
+        return redirect(url_for('admin.admin_dashboard'))
+
+
+@admin_required
+def analytics():
+    """System analytics and statistics"""
+    try:
+        # User statistics
+        total_users = LoginInfo.query.count()
+        active_users = LoginInfo.query.filter_by(is_approved=True).count()
+        pending_users = LoginInfo.query.filter_by(is_approved=False).count()
+        admins = LoginInfo.query.filter_by(role='admin').count()
+        managers = LoginInfo.query.filter_by(role='manager').count()
+        developers = LoginInfo.query.filter_by(role='developer').count()
+        visitors = LoginInfo.query.filter_by(role='visitor').count()
+        
+        # Team statistics
+        total_teams = Team.query.filter_by(is_deleted=False).count()
+        teams_with_projects = db.session.query(Team.id).join(Project).distinct().count()
+        
+        # Project statistics
+        total_projects = Project.query.filter_by(is_deleted=False).count()
+        completed_projects = 0
+        in_progress_projects = 0
+        
+        for project in Project.query.filter_by(is_deleted=False).all():
+            total_tasks = len(project.tasks)
+            if total_tasks > 0:
+                completed_tasks = sum(1 for t in project.tasks if t.completion_status == CompletionStatus.completed)
+                if completed_tasks == total_tasks:
+                    completed_projects += 1
+                else:
+                    in_progress_projects += 1
+        
+        # Task statistics
+        total_tasks = Task.query.filter_by(is_deleted=False).count()
+        completed_tasks = Task.query.filter_by(
+            is_deleted=False, 
+            completion_status=CompletionStatus.completed
+        ).count()
+        in_progress_tasks = Task.query.filter_by(
+            is_deleted=False,
+            completion_status=CompletionStatus.in_progress
+        ).count()
+        todo_tasks = Task.query.filter_by(
+            is_deleted=False,
+            completion_status=CompletionStatus.to_do
+        ).count()
+        
+        # Recent activity (last 7 days)
+        week_ago = datetime.now() - timedelta(days=7)
+        recent_notifications = Notification.query.filter(
+            Notification.created_at >= week_ago
+        ).count()
+        
+        stats = {
+            'users': {
+                'total': total_users,
+                'active': active_users,
+                'pending': pending_users,
+                'admins': admins,
+                'managers': managers,
+                'developers': developers,
+                'visitors': visitors
+            },
+            'teams': {
+                'total': total_teams,
+                'with_projects': teams_with_projects,
+                'without_projects': total_teams - teams_with_projects
+            },
+            'projects': {
+                'total': total_projects,
+                'completed': completed_projects,
+                'in_progress': in_progress_projects
+            },
+            'tasks': {
+                'total': total_tasks,
+                'completed': completed_tasks,
+                'in_progress': in_progress_tasks,
+                'todo': todo_tasks,
+                'completion_rate': round((completed_tasks / total_tasks * 100) if total_tasks > 0 else 0, 1)
+            },
+            'activity': {
+                'notifications_week': recent_notifications
+            }
+        }
+        
+        return render_template('admin/analytics.html', stats=stats)
+    except Exception as e:
+        current_app.logger.error(f'Error loading analytics: {str(e)}')
+        flash('Error loading analytics', 'error')
+        return redirect(url_for('admin.admin_dashboard'))
+

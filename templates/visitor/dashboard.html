@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+{% block title %}Visitor Dashboard{% endblock %}
+
+{% block content %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+    }
+
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .welcome-header {
+        text-align: center;
+        color: white;
+        margin-bottom: 50px;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    .welcome-header h1 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .welcome-header p {
+        font-size: 1.2rem;
+        opacity: 0.95;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+        margin-bottom: 50px;
+    }
+
+    .stat-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.6s ease-out;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        font-size: 1rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+
+    .actions-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
+
+    .action-card {
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        animation: fadeInUp 0.8s ease-out;
+        border: 2px solid transparent;
+    }
+
+    .action-card:hover {
+        border-color: #667eea;
+        transform: translateY(-5px);
+    }
+
+    .action-icon {
+        font-size: 3.5rem;
+        margin-bottom: 20px;
+        display: block;
+    }
+
+    .action-card h3 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .action-card p {
+        color: #64748b;
+        margin-bottom: 25px;
+        line-height: 1.6;
+    }
+
+    .btn-action {
+        display: inline-block;
+        padding: 14px 32px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    }
+
+    .recent-activity {
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        animation: fadeInUp 1s ease-out;
+    }
+
+    .recent-activity h2 {
+        font-size: 1.8rem;
+        color: #1e293b;
+        margin-bottom: 25px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .activity-item {
+        padding: 20px;
+        border-left: 4px solid #667eea;
+        background: #f8fafc;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        transition: all 0.2s ease;
+    }
+
+    .activity-item:hover {
+        background: #f1f5f9;
+        border-left-width: 6px;
+    }
+
+    .activity-title {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 5px;
+    }
+
+    .activity-meta {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .welcome-header h1 {
+            font-size: 2rem;
+        }
+
+        .stats-grid,
+        .actions-section {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="welcome-header">
+        <h1>👋 Welcome, {{ session.get('username', 'Visitor') }}!</h1>
+        <p>Explore your projects and stay updated with team activities</p>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-icon">📊</span>
+            <div class="stat-value">{{ project_count | default(0) }}</div>
+            <div class="stat-label">Active Projects</div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">✅</span>
+            <div class="stat-value">{{ task_count | default(0) }}</div>
+            <div class="stat-label">Total Tasks</div>
+        </div>
+
+        <div class="stat-card">
+            <span class="stat-icon">👥</span>
+            <div class="stat-value">{{ team_count | default(0) }}</div>
+            <div class="stat-label">Team Members</div>
+        </div>
+    </div>
+
+    <div class="actions-section">
+        <div class="action-card">
+            <span class="action-icon">🗂️</span>
+            <h3>View Projects</h3>
+            <p>Browse all projects you have access to and track their progress in real-time.</p>
+            <a href="{{ url_for('visitor.view_approved_projects') }}" class="btn-action">View Projects</a>
+        </div>
+
+        <div class="action-card">
+            <span class="action-icon">💬</span>
+            <h3>Submit Feedback</h3>
+            <p>Share your thoughts, suggestions, or report issues to help us improve.</p>
+            <a href="{{ url_for('visitor.submit_feedback') }}" class="btn-action">Give Feedback</a>
+        </div>
+
+        <div class="action-card">
+            <span class="action-icon">📈</span>
+            <h3>Track Progress</h3>
+            <p>Monitor task completion and project milestones across all your teams.</p>
+            <a href="{{ url_for('visitor.view_approved_projects') }}" class="btn-action">View Progress</a>
+        </div>
+    </div>
+
+    {% if recent_projects %}
+    <div class="recent-activity">
+        <h2><span>🕐</span>Recent Projects</h2>
+        {% for project in recent_projects %}
+        <div class="activity-item">
+            <div class="activity-title">{{ project.name }}</div>
+            <div class="activity-meta">
+                {{ project.summary | default('No summary available') }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

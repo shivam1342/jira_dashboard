@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+            color: #1a1a1a;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: #2d3748;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1a202c;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #2d3748;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #f7fafc;
+        }
+
+        .section-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #718096;
+            margin-bottom: 1.25rem;
+        }
+
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .grid-4 {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+        }
+
+        .stat-card {
+            text-align: center;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue { background: #ebf8ff; color: #3182ce; }
+        .stat-icon.green { background: #f0fff4; color: #38a169; }
+        .stat-icon.yellow { background: #fefcbf; color: #d69e2e; }
+        .stat-icon.red { background: #fff5f5; color: #e53e3e; }
+        .stat-icon.purple { background: #faf5ff; color: #805ad5; }
+        .stat-icon.gray { background: #f7fafc; color: #4a5568; }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #718096;
+            font-weight: 500;
+        }
+
+        .progress-card {
+            padding: 2rem;
+        }
+
+        .progress-label {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 1rem;
+        }
+
+        .progress-bar-container {
+            background: #f7fafc;
+            height: 12px;
+            border-radius: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #38a169 0%, #48bb78 100%);
+            border-radius: 100px;
+            transition: width 1s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-value {
+            text-align: center;
+            margin-top: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #38a169;
+        }
+
+        .activity-card {
+            padding: 2rem;
+        }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .activity-item {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            color: white;
+        }
+
+        .activity-item.blue {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .activity-item.green {
+            background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+        }
+
+        .activity-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-label {
+            font-size: 0.875rem;
+            opacity: 0.95;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .nav-buttons {
+                flex-wrap: wrap;
+            }
+
+            .stat-value {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 Analytics Dashboard</h1>
+            <div class="nav-buttons">
+                <a href="{{ url_for('admin.admin_dashboard') }}" class="btn btn-secondary">← Dashboard</a>
+                <a href="{{ url_for('admin.system_logs') }}" class="btn btn-secondary">System Logs</a>
+                <a href="{{ url_for('admin.user_activity') }}" class="btn btn-secondary">User Activity</a>
+            </div>
+        </div>
+
+        <!-- User Statistics -->
+        <div class="section-title">User Overview</div>
+        <div class="grid grid-4">
+            <div class="card stat-card">
+                <div class="stat-icon blue">👥</div>
+                <div class="stat-value">{{ stats.users.total }}</div>
+                <div class="stat-label">Total Users</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon green">✓</div>
+                <div class="stat-value">{{ stats.users.active }}</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon yellow">⏳</div>
+                <div class="stat-value">{{ stats.users.pending }}</div>
+                <div class="stat-label">Pending Approval</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon red">🛡️</div>
+                <div class="stat-value">{{ stats.users.admins }}</div>
+                <div class="stat-label">Administrators</div>
+            </div>
+        </div>
+
+        <!-- User Roles -->
+        <div class="section-title">User Roles Distribution</div>
+        <div class="grid grid-3">
+            <div class="card stat-card">
+                <div class="stat-icon purple">👔</div>
+                <div class="stat-value">{{ stats.users.managers }}</div>
+                <div class="stat-label">Managers</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon green">💻</div>
+                <div class="stat-value">{{ stats.users.developers }}</div>
+                <div class="stat-label">Developers</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon blue">👁️</div>
+                <div class="stat-value">{{ stats.users.visitors }}</div>
+                <div class="stat-label">Visitors</div>
+            </div>
+        </div>
+
+        <!-- Teams & Projects -->
+        <div class="section-title">Teams & Projects</div>
+        <div class="grid grid-3">
+            <div class="card stat-card">
+                <div class="stat-icon blue">🏢</div>
+                <div class="stat-value">{{ stats.teams.total }}</div>
+                <div class="stat-label">Total Teams</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon purple">📁</div>
+                <div class="stat-value">{{ stats.projects.total }}</div>
+                <div class="stat-label">Total Projects</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon green">✅</div>
+                <div class="stat-value">{{ stats.projects.completed }}</div>
+                <div class="stat-label">Completed Projects</div>
+            </div>
+        </div>
+
+        <!-- Task Statistics -->
+        <div class="section-title">Task Overview</div>
+        <div class="grid grid-4">
+            <div class="card stat-card">
+                <div class="stat-icon gray">📋</div>
+                <div class="stat-value">{{ stats.tasks.total }}</div>
+                <div class="stat-label">Total Tasks</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon green">✓</div>
+                <div class="stat-value">{{ stats.tasks.completed }}</div>
+                <div class="stat-label">Completed</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon yellow">⚡</div>
+                <div class="stat-value">{{ stats.tasks.in_progress }}</div>
+                <div class="stat-label">In Progress</div>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-icon blue">📝</div>
+                <div class="stat-value">{{ stats.tasks.todo }}</div>
+                <div class="stat-label">To Do</div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="card progress-card">
+            <div class="progress-label">Overall Task Completion</div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: {{ stats.tasks.completion_rate }}%"></div>
+            </div>
+            <div class="progress-value">{{ stats.tasks.completion_rate }}%</div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="section-title">Recent Activity (Last 7 Days)</div>
+        <div class="card activity-card">
+            <div class="activity-grid">
+                <div class="activity-item blue">
+                    <div class="activity-value">{{ stats.activity.notifications_week }}</div>
+                    <div class="activity-label">📬 Notifications Sent</div>
+                </div>
+                <div class="activity-item green">
+                    <div class="activity-value">{{ stats.projects.in_progress }}</div>
+                    <div class="activity-label">🚀 Active Projects</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

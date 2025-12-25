@@ -1,136 +1,461 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Project Detail</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f1f5f9;
-      padding: 40px;
+{% extends 'base.html' %}
+{% block title %}{{ project.name }} - Details{% endblock %}
+
+{% block content %}
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
     }
 
-    h2 {
-      color: #1e293b;
-      margin-bottom: 20px;
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
     }
 
     .detail-container {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 10px;
-      border: 1px solid #e2e8f0;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
     }
 
-    .section-title {
-      color: #1e293b;
-      font-size: 20px;
-      font-weight: 600;
-      margin-top: 20px;
-      margin-bottom: 10px;
+    .page-header {
+        color: white;
+        margin-bottom: 40px;
+        animation: fadeInDown 0.6s ease-out;
     }
 
-    .info-box {
-      background: #f9fafb;
-      border: 1px solid #e2e8f0;
-      padding: 15px;
-      border-radius: 8px;
-      margin-bottom: 15px;
+    .page-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .breadcrumb {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.95rem;
+    }
+
+    .breadcrumb a {
+        color: white;
+        text-decoration: none;
+        opacity: 0.8;
+    }
+
+    .breadcrumb a:hover {
+        opacity: 1;
+        text-decoration: underline;
+    }
+
+    .content-grid {
+        display: grid;
+        gap: 30px;
+    }
+
+    .card {
+        background: white;
+        padding: 35px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .card-icon {
+        font-size: 2.5rem;
+    }
+
+    .card-header h2 {
+        font-size: 1.5rem;
+        color: #1e293b;
+        font-weight: 600;
+    }
+
+    .info-grid {
+        display: grid;
+        gap: 20px;
+    }
+
+    .info-row {
+        display: flex;
+        padding: 15px;
+        background: #f8fafc;
+        border-left: 4px solid #667eea;
+        border-radius: 8px;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #475569;
+        min-width: 140px;
+    }
+
+    .info-value {
+        color: #1e293b;
+        flex: 1;
+    }
+
+    .progress-section {
+        margin-top: 25px;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .progress-label {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .progress-percentage {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #667eea;
     }
 
     .progress-bar {
-      height: 18px;
-      background-color: #e5e7eb;
-      border-radius: 8px;
-      overflow: hidden;
+        height: 24px;
+        background: #e5e7eb;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .progress-fill {
-      height: 100%;
-      background-color: #22c55e;
-      transition: width 0.3s ease;
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.6s ease;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
     }
 
-    .team-member {
-      background: #f8fafc;
-      padding: 10px 14px;
-      border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      color: #475569;
+    .members-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
     }
 
-    .task {
-      margin-bottom: 15px;
+    .member-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px;
+        background: #f8fafc;
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        transition: all 0.2s ease;
+    }
+
+    .member-card:hover {
+        border-color: #667eea;
+        background: white;
+        transform: translateX(5px);
+    }
+
+    .member-avatar {
+        font-size: 2rem;
+    }
+
+    .member-info {
+        flex: 1;
+    }
+
+    .member-name {
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 3px;
+    }
+
+    .member-role {
+        font-size: 0.875rem;
+        color: #64748b;
+    }
+
+    .tasks-list {
+        margin-top: 20px;
+    }
+
+    .task-item {
+        margin-bottom: 20px;
+        padding: 20px;
+        background: #f8fafc;
+        border-left: 5px solid #667eea;
+        border-radius: 10px;
+        transition: all 0.2s ease;
+    }
+
+    .task-item:hover {
+        background: white;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .task-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
     }
 
     .task-name {
-      font-weight: bold;
-      color: #1e293b;
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 1.1rem;
     }
 
-    .subtask {
-      margin-left: 20px;
-      padding: 6px 10px;
-      background: #f1f5f9;
-      border-left: 3px solid #3b82f6;
-      border-radius: 5px;
-      margin-top: 5px;
-      color: #374151;
+    .task-status {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: capitalize;
     }
-  </style>
-</head>
-<body>
 
-  <h2>Project: {{ project.name }}</h2>
+    .status-pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
 
-  <div class="detail-container">
+    .status-in_progress {
+        background: #dbeafe;
+        color: #1e40af;
+    }
 
-    <div class="info-box">
-      <p><strong>Summary:</strong> {{ project.summary or "N/A" }}</p>
-      <p><strong>Description:</strong> {{ project.description or "N/A" }}</p>
-      <p><strong>Deadline:</strong> {{ project.deadline or "Not Set" }}</p>
-    </div>
+    .status-completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
 
-    <div class="section-title">Progress</div>
-    <div class="progress-bar">
-      <div class="progress-fill" style="width: {{ progress_percentage }}%;"></div>
-    </div>
-    <p>{{ progress_percentage | round(2) }}% complete</p>
+    .subtasks-list {
+        margin-top: 12px;
+        padding-left: 20px;
+    }
 
-    {% if team %}
-      <div class="section-title">Team: {{ team.name }}</div>
-      {% if members %}
-        {% for member in members %}
-          <div class="team-member">
-            👤 {{ member.user.profile.name or member.user.username }} — <em>{{ member.role.name.replace('_', ' ').title() }}</em>
-          </div>
-        {% endfor %}
-      {% else %}
-        <p>No team members assigned.</p>
-      {% endif %}
-    {% else %}
-      <p>No team assigned to this project.</p>
-    {% endif %}
+    .subtask-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        margin-bottom: 8px;
+        background: white;
+        border-left: 3px solid #a5b4fc;
+        border-radius: 6px;
+    }
 
-    <div class="section-title">Tasks</div>
-    {% if tasks %}
-      {% for task in tasks %}
-        <div class="task">
-          <div class="task-name">{{ task.task_name }} — {{ task.completion_status.name.title() }}</div>
-          {% if task.subtasks %}
-            {% for subtask in task.subtasks %}
-              <div class="subtask">
-                🔹 {{ subtask.name }} — {{ subtask.status.name.title() }}
-              </div>
-            {% endfor %}
-          {% endif %}
+    .subtask-icon {
+        font-size: 1.2rem;
+    }
+
+    .subtask-name {
+        flex: 1;
+        color: #475569;
+    }
+
+    .subtask-status {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        border-radius: 12px;
+        background: #e0e7ff;
+        color: #4338ca;
+        font-weight: 500;
+    }
+
+    .empty-message {
+        text-align: center;
+        padding: 40px;
+        color: #64748b;
+        font-style: italic;
+    }
+
+    .back-button {
+        display: inline-block;
+        margin-top: 30px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateX(-5px);
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .page-header h1 {
+            font-size: 1.8rem;
+        }
+
+        .members-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .task-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+    }
+</style>
+
+<div class="detail-container">
+    <div class="page-header">
+        <div class="breadcrumb">
+            <a href="{{ url_for('visitor.visitor_dashboard') }}">Dashboard</a> / 
+            <a href="{{ url_for('visitor.view_approved_projects') }}">Projects</a> / 
+            {{ project.name }}
         </div>
-      {% endfor %}
-    {% else %}
-      <p>No tasks found for this project.</p>
-    {% endif %}
-  </div>
+        <h1>📊 {{ project.name }}</h1>
+    </div>
 
-</body>
-</html>
+    <div class="content-grid">
+        <!-- Project Information Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">📋</span>
+                <h2>Project Information</h2>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-row">
+                    <span class="info-label">Summary:</span>
+                    <span class="info-value">{{ project.summary or "No summary available" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Description:</span>
+                    <span class="info-value">{{ project.description or "No description available" }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Deadline:</span>
+                    <span class="info-value">{{ project.deadline.strftime('%B %d, %Y') if project.deadline else "Not set" }}</span>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-header">
+                    <span class="progress-label">Project Progress</span>
+                    <span class="progress-percentage">{{ progress_percentage | round(1) }}%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: {{ progress_percentage }}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Members Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">👥</span>
+                <h2>Team Members</h2>
+            </div>
+
+            {% if team and members %}
+                <div style="margin-bottom: 20px; padding: 12px; background: #ede9fe; border-radius: 10px;">
+                    <strong style="color: #5b21b6;">Team:</strong> {{ team.name }}
+                </div>
+
+                <div class="members-grid">
+                    {% for member in members %}
+                        <div class="member-card">
+                            <span class="member-avatar">👤</span>
+                            <div class="member-info">
+                                <div class="member-name">{{ member.user.profile.name or member.user.username }}</div>
+                                <div class="member-role">{{ member.role.name.replace('_', ' ').title() }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-message">
+                    No team members assigned to this project yet.
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Tasks Card -->
+        <div class="card">
+            <div class="card-header">
+                <span class="card-icon">✅</span>
+                <h2>Tasks</h2>
+            </div>
+
+            {% if tasks %}
+                <div class="tasks-list">
+                    {% for task in tasks %}
+                        <div class="task-item">
+                            <div class="task-header">
+                                <span class="task-name">{{ task.task_name }}</span>
+                                <span class="task-status status-{{ task.completion_status.name }}">
+                                    {{ task.completion_status.name.replace('_', ' ').title() }}
+                                </span>
+                            </div>
+
+                            {% if task.subtasks %}
+                                <div class="subtasks-list">
+                                    {% for subtask in task.subtasks %}
+                                        <div class="subtask-item">
+                                            <span class="subtask-icon">🔹</span>
+                                            <span class="subtask-name">{{ subtask.name }}</span>
+                                            <span class="subtask-status">{{ subtask.status.name.replace('_', ' ').title() }}</span>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-message">
+                    No tasks have been created for this project yet.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div style="text-align: center;">
+        <a href="{{ url_for('visitor.view_approved_projects') }}" class="back-button">
+            ← Back to Projects
+        </a>
+    </div>
+</div>
+{% endblock %}

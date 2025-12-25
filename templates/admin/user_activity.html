@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}User Activity - Admin{% endblock %}
+
+{% block content %}
+<style>
+    .activity-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .activity-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .activity-header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: white;
+    }
+
+    .activity-nav {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .activity-btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .activity-btn-primary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .activity-btn-primary:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-1px);
+    }
+
+    .activity-btn-secondary {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .activity-btn-secondary:hover {
+        background: rgba(255,255,255,0.25);
+    }
+
+    .activity-card {
+        background: rgba(255,255,255,0.95);
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(255,255,255,0.3);
+        margin-bottom: 2rem;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .activity-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+
+    .activity-card-header {
+        padding: 1.25rem 1.75rem;
+        font-size: 1.125rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: white;
+        }
+
+        .card-header-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: white;
+    }
+
+    .activity-card-header-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .activity-card-header-info {
+        background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    .scrollable {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+
+    .activity-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .activity-table th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #718096;
+        background: #f7fafc;
+        border-bottom: 2px solid #e2e8f0;
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .activity-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 0.875rem;
+    }
+
+    .activity-table tr:hover {
+        background: #f7fafc;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .badge-admin {
+        background: #fee;
+        color: #c53030;
+    }
+
+    .badge-manager {
+        background: #e0f2fe;
+        color: #0369a1;
+    }
+
+    .badge-developer {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-visitor {
+        background: #f3f4f6;
+        color: #4b5563;
+    }
+
+    .badge-approved {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .badge-pending {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .username {
+        font-weight: 600;
+        color: #2d3748;
+    }
+
+    .text-muted {
+        color: #718096;
+    }
+
+    .read-icon {
+        font-size: 1rem;
+    }
+
+    .read-icon-yes {
+        color: #059669;
+    }
+
+    .read-icon-no {
+        color: #3b82f6;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: rgba(255,255,255,0.7);
+    }
+
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+        .activity-container {
+            padding: 1rem;
+        }
+
+        .activity-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .activity-nav {
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .activity-btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .activity-table th, 
+        .activity-table td {
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<div class="activity-container">
+    <div class="activity-header">
+        <h1>👥 User Activity</h1>
+        <div class="activity-nav">
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="activity-btn activity-btn-secondary">← Dashboard</a>
+            <a href="{{ url_for('admin.system_logs') }}" class="activity-btn activity-btn-secondary">📋 Logs</a>
+            <a href="{{ url_for('admin.analytics') }}" class="activity-btn activity-btn-primary">📊 Analytics</a>
+        </div>
+    </div>
+
+    <!-- User Status Overview -->
+    <div class="activity-card">
+        <div class="activity-card-header activity-card-header-primary">
+            👤 User Status Overview
+        </div>
+        <div class="table-container">
+            <table class="activity-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Last Activity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td class="username">{{ user.user }}</td>
+                        <td>{{ user.name }}</td>
+                        <td>
+                            {% if user.role == 'admin' %}
+                            <span class="badge badge-admin">🛡️ Admin</span>
+                            {% elif user.role == 'manager' %}
+                            <span class="badge badge-manager">👔 Manager</span>
+                            {% elif user.role == 'developer' %}
+                            <span class="badge badge-developer">💻 Developer</span>
+                            {% else %}
+                            <span class="badge badge-visitor">👁️ {{ user.role }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted">{{ user.email }}</td>
+                        <td>
+                            {% if user.status == 'Approved' %}
+                            <span class="badge badge-approved">✓ Approved</span>
+                            {% else %}
+                            <span class="badge badge-pending">⏳ Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-muted">{{ user.last_activity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Notifications/Activity -->
+    <div class="activity-card">
+        <div class="activity-card-header activity-card-header-info">
+            🔔 Recent System Activity (Last 50)
+        </div>
+        {% if notifications %}
+        <div class="scrollable">
+            <table class="activity-table">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">User</th>
+                        <th>Action</th>
+                        <th style="width: 18%;">Timestamp</th>
+                        <th style="width: 10%;">Read</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for notif in notifications %}
+                    <tr>
+                        <td class="username">{{ notif.user }}</td>
+                        <td>{{ notif.action }}</td>
+                        <td class="text-muted">{{ notif.timestamp }}</td>
+                        <td>
+                            {% if notif.is_read %}
+                            <span class="read-icon read-icon-yes">✓</span>
+                            {% else %}
+                            <span class="read-icon read-icon-no">○</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No recent activity</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

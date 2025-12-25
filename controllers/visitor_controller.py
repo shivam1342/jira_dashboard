@@ -10,6 +10,42 @@ from models.note import Note
 from datetime import datetime
 
 
+def visitor_dashboard():
+    visitor_id = session.get('user_id')
+    
+    # Get team IDs for the visitor
+    team_ids = [tm.team_id for tm in TeamMember.query.filter_by(user_id=visitor_id).all()]
+    
+    # Get project IDs from team projects
+    project_ids = [tp.project_id for tp in TeamProject.query.filter(TeamProject.team_id.in_(team_ids)).all()]
+    
+    # Get projects
+    projects = Project.query.filter(
+        Project.id.in_(project_ids),
+        Project.is_deleted == False
+    ).all()
+    
+    # Get tasks for these projects
+    tasks = Task.query.filter(
+        Task.project_id.in_(project_ids),
+        Task.is_deleted == False
+    ).all()
+    
+    # Get unique team members count
+    team_members_count = db.session.query(TeamMember).filter(
+        TeamMember.team_id.in_(team_ids)
+    ).distinct(TeamMember.user_id).count()
+    
+    # Get recent projects (last 3)
+    recent_projects = projects[:3] if projects else []
+    
+    return render_template('visitor/dashboard.html', 
+                          project_count=len(projects),
+                          task_count=len(tasks),
+                          team_count=team_members_count,
+                          recent_projects=recent_projects)
+
+
 def view_approved_projects():
     visitor_id = session.get('user_id')
 
@@ -50,12 +86,12 @@ def submit_feedback():
         note = Note(
             sender_id=None, 
             receiver_id=None,  
-            content=f"[Visitor: {name}, Email: {email}]\n{message}",
+            content=f"[Visitor Feedback]\nName: {name}\nEmail: {email}\n\nMessage:\n{message}",
             timestamp=datetime.utcnow()
         )
         db.session.add(note)
         db.session.commit()
-        flash("Feedback submitted successfully.")
-        return redirect(url_for('visitor.view_approved_projects'))
+        flash("Thank you for your feedback! We appreciate your input.", "success")
+        return redirect(url_for('visitor.submit_feedback'))
 
     return render_template('visitor/feedback.html')

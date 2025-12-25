@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}System Logs - Admin{% endblock %}
+
+{% block content %}
+<style>
+    .logs-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+
+    .logs-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 3rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .logs-header h1 {
+        font-size: 2rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: white;
+    }
+
+    .logs-nav {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    .logs-btn {
+        padding: 0.625rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .logs-btn-primary {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .logs-btn-primary:hover {
+        background: rgba(255,255,255,0.3);
+        transform: translateY(-1px);
+    }
+
+    .logs-btn-secondary {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .logs-btn-secondary:hover {
+        background: rgba(255,255,255,0.25);
+    }
+
+    .logs-card {
+        background: rgba(255,255,255,0.95);
+        border-radius: 12px;
+        padding: 0;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        border: 1px solid rgba(255,255,255,0.3);
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+    }
+
+    .logs-card-header {
+        background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+        color: white;
+        padding: 1.25rem 1.75rem;
+        font-size: 1.125rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .logs-container {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .logs-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+.logs-table-wrapper {
+        max-height: 600px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+    }
+
+    .logs-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .logs-table thead {
+        position: sticky;
+        top: 0;
+        background: #f7fafc;
+        z-index: 10;
+    }
+
+    .logs-table th {
+        padding: 1rem 1.5rem;
+        text-align: left;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #718096;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .logs-table td {
+        padding: 0.875rem 1.5rem;
+        border-bottom: 1px solid #f0f0f0;
+        font-family: 'Courier New', Consolas, monospace;
+        font-size: 0.875rem;
+    }
+
+    .logs-table tr:hover {
+        background: #f7fafc;
+    }
+
+    .log-row-error {
+        background: #fff5f5;
+    }
+
+    .log-row-error:hover {
+        background: #fed7d7;
+    }
+
+    .log-row-warning {
+        background: #fffbeb;
+    }
+
+    .log-row-warning:hover {
+        background: #fef3c7;
+    }
+
+    .log-row-info {
+        background: white;
+    }
+
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        font-family: 'Inter', -apple-system, sans-serif;
+    }
+
+    .badge-error {
+        background: #fee;
+        color: #c53030;
+    }
+
+    .badge-warning {
+        background: #fef3c7;
+        color: #d69e2e;
+    }
+
+    .badge-info {
+        background: #e6fffa;
+        color: #319795;
+    }
+
+    .timestamp {
+        color: #718096;
+        white-space: nowrap;
+    }
+
+    .message {
+        word-break: break-word;
+        color: #2d3748;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        color: rgba(255,255,255,0.7);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .info-box {
+        margin-top: 2rem;
+        padding: 1.25rem 1.75rem;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        border-left: 4px solid rgba(59,130,246,0.8);
+        border: 1px solid rgba(255,255,255,0.2);
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .info-box-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .info-box-content {
+        flex: 1;
+        color: white;
+    }
+
+    .info-box-content strong {
+        display: block;
+        margin-bottom: 0.25rem;
+        color: white;
+    }
+
+    @media (max-width: 768px) {
+        .logs-container {
+            padding: 1rem;
+        }
+
+        .logs-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .logs-nav {
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        .logs-btn {
+            flex: 1;
+            text-align: center;
+        }
+
+        .logs-table th,
+        .logs-table td {
+            padding: 0.75rem 1rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+<div class="logs-container">
+    <div class="logs-header">
+        <h1>📋 System Logs</h1>
+        <div class="logs-nav">
+            <a href="{{ url_for('admin.admin_dashboard') }}" class="logs-btn logs-btn-secondary">← Dashboard</a>
+            <a href="{{ url_for('admin.user_activity') }}" class="logs-btn logs-btn-secondary">👥 Activity</a>
+            <a href="{{ url_for('admin.analytics') }}" class="logs-btn logs-btn-primary">📊 Analytics</a>
+        </div>
+    </div>
+
+    <div class="logs-card">
+        <div class="logs-card-header">
+            💻 Recent System Logs (Last 500 entries)
+        </div>
+        {% if logs %}
+        <div class="logs-table-wrapper">
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th style="width: 12%;">Timestamp</th>
+                        <th style="width: 10%;">Level</th>
+                        <th>Message</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                    <tr class="log-row-{% if log.level == 'ERROR' %}error{% elif log.level == 'WARNING' %}warning{% else %}info{% endif %}">
+                        <td class="timestamp">{{ log.timestamp }}</td>
+                        <td>
+                            {% if log.level == 'ERROR' %}
+                            <span class="badge badge-error">ERROR</span>
+                            {% elif log.level == 'WARNING' %}
+                            <span class="badge badge-warning">WARNING</span>
+                            {% else %}
+                            <span class="badge badge-info">INFO</span>
+                            {% endif %}
+                        </td>
+                        <td class="message">{{ log.message }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <p>No logs available</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="info-box">
+        <div class="info-box-icon">ℹ️</div>
+        <div class="info-box-content">
+            <strong>Note:</strong>
+            Logs show the most recent 500 entries. For full log history, check the server log files directly.
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

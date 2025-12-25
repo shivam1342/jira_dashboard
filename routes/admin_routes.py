@@ -30,6 +30,11 @@ admin_bp.route('/users/<int:user_id>/reset-password', methods=['GET', 'POST'])(a
 admin_bp.route('/reports', methods=['GET'])(admin_controller.reports)  # List
 admin_bp.route('/reports/projects/<int:project_id>', methods=['GET'])(admin_controller.project_report)  # Project report
 
+# Logs & Analytics
+admin_bp.route('/logs', methods=['GET'])(admin_controller.system_logs)  # System logs
+admin_bp.route('/activity', methods=['GET'])(admin_controller.user_activity)  # User activity
+admin_bp.route('/analytics', methods=['GET'])(admin_controller.analytics)  # Analytics dashboard
+
 # Visitors - RESTful routes
 admin_bp.route('/visitors', methods=['GET'])(admin_controller.handle_visitors)  # List
 admin_bp.route('/visitors/approve', methods=['POST'])(admin_controller.approve_visitor)  # Approve
