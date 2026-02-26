@@ -26,14 +26,14 @@ def create_team():
             # Validation
             if not name:
                 flash('Team name is required', 'error')
-                return redirect(url_for('admin.show_create_team_form'))
+                return redirect(url_for('admin.create_team'))
 
             # Check for duplicate team name
             existing_team = Team.query.filter_by(name=name, is_deleted=False).first()
             if existing_team:
                 flash(f'Team "{name}" already exists', 'error')
                 current_app.logger.warning(f'Attempt to create duplicate team: {name}')
-                return redirect(url_for('admin.show_create_team_form'))
+                return redirect(url_for('admin.create_team'))
 
             team = Team(name=name, description=description)
 
@@ -60,17 +60,17 @@ def create_team():
             db.session.rollback()
             current_app.logger.error(f'Database integrity error creating team: {str(e)}')
             flash('Error creating team: Duplicate name or invalid data', 'error')
-            return redirect(url_for('admin.show_create_team_form'))
+            return redirect(url_for('admin.create_team'))
         except ValueError as e:
             db.session.rollback()
             current_app.logger.error(f'ValueError creating team: {str(e)}')
             flash('Invalid manager selection', 'error')
-            return redirect(url_for('admin.show_create_team_form'))
+            return redirect(url_for('admin.create_team'))
         except Exception as e:
             db.session.rollback()
             current_app.logger.error(f'Unexpected error creating team: {str(e)}', exc_info=True)
             flash('An unexpected error occurred. Please try again.', 'error')
-            return redirect(url_for('admin.show_create_team_form'))
+            return redirect(url_for('admin.create_team'))
 
     potential_managers = LoginInfo.query \
         .filter(LoginInfo.is_deleted == False) \
